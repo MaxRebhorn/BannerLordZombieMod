@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.SaveSystem;
+using ZombiePlague.Behaviors;
 
 namespace ZombiePlague.Infrastructure;
 
@@ -24,5 +27,11 @@ public class ZombieSaveableTypeDefiner : SaveableTypeDefiner
 	protected override void DefineClassTypes()
 	{
 		AddClassDefinition(typeof(ZombiePartyComponent), 1);
+		AddClassDefinition(typeof(VillageDebuffRecord), 2);
+	}
+
+	protected override void DefineContainerDefinitions()
+	{
+		ConstructContainerDefinition(typeof(Dictionary<Settlement, VillageDebuffRecord>));
 	}
 }

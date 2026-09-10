@@ -41,7 +41,7 @@ internal enum ZombieSizeCategory
 internal static class ZombieBehaviorConfig
 {
 	// --- Feature 1: young horde survival ---
-	public static int YoungHordeMaxTroops = 50;
+	public static int YoungHordeMaxTroops = 300;
 	public static float YoungHordeFleeThreatMultiplier = 3f;
 	public static float YoungFleeThreatRadius = 10f;
 	public static float YoungHordeFleeDistance = 30f;
@@ -115,7 +115,7 @@ internal static class ZombieBehaviorConfig
 	public static float HeroTurnTroopSizeModifier = 0.3f;
 	// Pulled forward from the AI Phase System (Phase 4, not built yet) - used
 	// here only as the "small horde" reference size for the formula above.
-	public static int SmallHordeMax = 120;
+	public static int SmallHordeMax = 300;
 
 	// --- Debug: farsight cheat (zombie.toggle_farsight) ---
 	// Flat map spotting range applied to the player's own party while enabled,
@@ -339,8 +339,8 @@ internal static class ZombieBehaviorConfig
 	// reference points the other size-gated behaviors below are meant to line
 	// up with: greedy growth engages at Medium, sieging requires Large - see
 	// GetSizeCategory.
-	public static int MediumHordeThreshold = 150;
-	public static int LargeHordeThreshold = 400;
+	public static int MediumHordeThreshold = 300;
+	public static int LargeHordeThreshold = 1000;
 
 	public static ZombieSizeCategory GetSizeCategory(int myTroops)
 	{
@@ -431,4 +431,15 @@ internal static class ZombieBehaviorConfig
 	public static int FrustrationAbandonThreshold = 15;
 	public static float FrustrationWindowDays = 7f;
 	public static float FrustrationRaidCancelRadius = 15f;
+
+	// --- Settlement debuffs (shared by village raids today, city sieges later) ---
+	public static float VillageDebuffDurationDays = 7f;
+	public static float ProsperityPenaltyPercent = 10f;
+	public static bool BlockRecruitmentEnabled = true;
+
+	// --- Village raids: prosperity/Hearth converted into fresh zombies on raid completion ---
+	public static float ProsperityToZombieMultiplier = 0.05f;
+	public static int MinZombiesGained = 2;
+	public static int MaxZombiesGained = 10;
+	public static float ZombieGainVariancePercent = 20f;
 }

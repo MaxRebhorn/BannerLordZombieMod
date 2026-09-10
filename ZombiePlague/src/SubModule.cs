@@ -36,6 +36,7 @@ public sealed class SubModule : MBSubModuleBase
 		{
 			Infrastructure.ZombieLog.Info("OnGameStart: registering campaign behavior");
 			campaignGameStarter.AddBehavior(new Behaviors.ZombiePlagueCampaignBehavior());
+			campaignGameStarter.AddBehavior(new Behaviors.ZombieVillageRaidBehavior());
 		}
 	}
 
