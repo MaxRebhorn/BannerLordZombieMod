@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	The zombie clan as a proper XML faction instead of a clan built at runtime.
+
+	Copied from the vanilla mercenary minor faction "ghilman" (SandBox/ModuleData/
+	spclans.xml). Going through XML deserialization means the game initializes
+	everything Clan.Deserialize normally sets - banner colors, minor faction
+	template list, tier, renown - which a Clan.CreateClan() clan never gets. That
+	missing initialization is what the debug ladder pinned down (t0 vanilla clan
+	worked, t1 our runtime clan crashed).
+
+	Deviations from the ghilman original, deliberately kept minimal:
+	  id / name / text          - ours
+	  culture                   - looters, matching our troops and the bandit look
+	  default_party_template    - our horde template
+	  color / color2            - green
+	  is_clan_type_mercenary    - dropped, zombies do not hire out as mercenaries
+	  initial_home_settlement   - a hideout instead of a castle, no ownership implied
+	  minor_faction_character_templates - omitted on purpose: we want no hero lords.
+	                              Vanilla bandit factions omit it too, so the list
+	                              ends up empty rather than null.
+	  is_minor_faction          - REMOVED, replaced by is_bandit + is_outlaw.
+	Everything else (banner_key, settlement_banner_mesh, tier) is taken over verbatim.
+
+	Why bandit instead of minor faction: a minor faction is expected to have lords,
+	and vanilla's daily minor-faction upkeep ran into our heroless clan (the game
+	already flagged the party as "wrongly created" in the conversation system, and
+	the crash landed in the daily tick). The bandit faction is the one vanilla
+	archetype that is heroless, owns parties and is hostile to everyone - exactly
+	what a zombie horde is. IsBanditFaction also keeps the clan out of all the
+	noble-clan logic (finances, diplomacy, succession) that assumes a leader exists.
+
+	The vanilla bandit auto-spawn stays inert for us: SpawnLooters only runs off
+	infested hideouts owned by the clan (we own none, so its count goes negative and
+	the loop never executes), and hideouts are only ever assigned to clans whose
+	culture has can_have_settlement="true" - the looters culture does not.
+-->
+<Factions>
+	<Faction
+		id="zombie_horde"
+		initial_home_settlement="Settlement.hideout_mountain_2"
+		banner_key="11.191.154.1536.1536.764.764.1.0.0.401.116.155.488.488.764.764.0.0.0"
+		color="FF3D8B3D"
+		color2="FF1F4D1F"
+		culture="Culture.looters"
+		default_party_template="PartyTemplate.zombie_horde_template"
+		settlement_banner_mesh="encounter_flag_f"
+		is_bandit="true"
+		is_outlaw="true"
+		name="{=zombieplague_clan_name}Zombie Horde"
+		tier="4"
+		text="{=zombieplague_clan_text}A growing horde of the risen dead. They do not negotiate, they do not retreat, and every fight they win makes them larger."></Faction>
+</Factions>

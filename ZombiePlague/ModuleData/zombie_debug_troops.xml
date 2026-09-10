@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Debug ladder troops. Not used by the mod itself, only by the zombie.t* console
+	commands to bisect what makes our own troops crash the party visual.
+
+	zombie_debug_clone     : byte-for-byte copy of the vanilla looter (all 14 battle
+	                         equipment rosters + the civilian one, upgrade_targets,
+	                         level 6). Only id and name differ.
+	zombie_debug_oneroster : same as the clone but cut down to the single equipment
+	                         roster our real zombies use. Isolates "number of
+	                         equipment rosters" from everything else.
+-->
+<NPCCharacters>
+	<NPCCharacter
+		id="zombie_debug_clone"
+		default_group="Infantry"
+		name="{=*}Debug Clone Looter"
+		level="6"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.looter" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.imperial_infantryman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster civilian="true">
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_hatchet_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v2" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.seax" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.bandit_leather_water_flask" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+				<equipment slot="Gloves" id="Item.armwraps" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_pickaxe_1_t1" />
+				<equipment slot="Body" id="Item.vlandia_bandit_c" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+				<equipment slot="Head" id="Item.wrapped_headcloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_hatchet_1_t1" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.torn_bandit_clothes" />
+				<equipment slot="Leg" id="Item.leather_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_pickaxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_gambeson" />
+				<equipment slot="Leg" id="Item.leather_shoes" />
+				<equipment slot="Head" id="Item.pilgrim_hood" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_sickle_1_t1" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+				<equipment slot="Head" id="Item.pilgrim_hood" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.falchion_sword_t2" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v2" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_pitchfork_2_t1" />
+				<equipment slot="Body" id="Item.vlandia_bandit_c" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+				<equipment slot="Head" id="Item.wrapped_headcloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.small_spurred_axe_t2" />
+				<equipment slot="Body" id="Item.torn_bandit_clothes" />
+				<equipment slot="Leg" id="Item.leather_shoes" />
+				<equipment slot="Head" id="Item.wrapped_headcloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.falchion_sword_t2" />
+				<equipment slot="Item1" id="Item.throwing_stone" />
+				<equipment slot="Body" id="Item.bandit_gambeson" />
+				<equipment slot="Leg" id="Item.leather_shoes" />
+				<equipment slot="Head" id="Item.wrapped_headcloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_pitchfork_2_t1" />
+				<equipment slot="Item1" id="Item.throwing_stone" />
+				<equipment slot="Body" id="Item.tattered_rags" />
+				<equipment slot="Leg" id="Item.leather_shoes" />
+				<equipment slot="Head" id="Item.wrapped_headcloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_hatchet_1_t1" />
+				<equipment slot="Item1" id="Item.throwing_stone" />
+				<equipment slot="Body" id="Item.tattered_rags" />
+				<equipment slot="Head" id="Item.pilgrim_hood" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+				<equipment slot="Gloves" id="Item.armwraps" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_pickaxe_1_t1" />
+				<equipment slot="Item1" id="Item.throwing_stone" />
+				<equipment slot="Body" id="Item.tattered_rags" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_debug_oneroster"
+		default_group="Infantry"
+		name="{=*}Debug Single Roster Looter"
+		level="6"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.looter" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.imperial_infantryman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Item1" id="Item.sling_wool" />
+				<equipment slot="Item2" id="Item.sling_stoneammo" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+</NPCCharacters>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/SubModule.xsd">
+  <Id value="ZombiePlague" />
+  <Name value="Zombie Plague" />
+  <Version value="v0.1.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community" />
+
+  <DependedModules>
+    <DependedModule Id="Native" />
+    <DependedModule Id="SandBoxCore" />
+    <DependedModule Id="Sandbox" />
+    <DependedModule Id="StoryMode" />
+    <DependedModule Id="Bannerlord.Harmony" />
+    <DependedModule Id="Bannerlord.UIExtenderEx" />
+    <DependedModule Id="Bannerlord.ButterLib" />
+    <DependedModule Id="Bannerlord.MBOptionScreen" />
+  </DependedModules>
+  <DependedModuleMetadatas>
+    <DependedModuleMetadata id="Native" order="LoadBeforeThis" version="v1.4.8.*" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.4.8.*" />
+    <DependedModuleMetadata id="Sandbox" order="LoadBeforeThis" version="v1.4.8.*" />
+    <DependedModuleMetadata id="StoryMode" order="LoadBeforeThis" version="v1.4.8.*" />
+    <DependedModuleMetadata id="Bannerlord.Harmony" order="LoadBeforeThis" />
+    <!-- MCM (Mod Configuration Menu) and its own two dependencies - lets
+         ZombiePlagueSettings.cs expose every ZombieBehaviorConfig value as
+         an in-game editable setting. -->
+    <DependedModuleMetadata id="Bannerlord.UIExtenderEx" order="LoadBeforeThis" />
+    <DependedModuleMetadata id="Bannerlord.ButterLib" order="LoadBeforeThis" />
+    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" />
+  </DependedModuleMetadatas>
+  <SubModules>
+    <SubModule>
+      <Name value="Zombie Plague" />
+      <DLLName value="ZombiePlague.dll" />
+      <SubModuleClassType value="ZombiePlague.SubModule" />
+      <Assemblies>
+        <Assembly Path="bin/Win64_Shipping_Client/ZombiePlague.dll" />
+      </Assemblies>
+      <Tags>
+        <Tag key="Campaign" />
+        <Tag key="CampaignSystem" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+  <Xmls>
+    <!-- skins.xml is not listed here on purpose: it is loaded through
+         ModuleData/project.mbproj, see the comment in that file. -->
+    <XmlNode>
+      <XmlName id="Monsters" path="zombie_monsters" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="BodyProperties" path="zombie_bodyproperties" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="Factions" path="zombie_clans" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="NPCCharacters" path="zombie_troops" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="NPCCharacters" path="zombie_troops_generated" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="NPCCharacters" path="zombie_debug_troops" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
+      <XmlName id="partyTemplates" path="zombie_party_templates" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+      </IncludedGameTypes>
+    </XmlNode>
+  </Xmls>
+</Module>

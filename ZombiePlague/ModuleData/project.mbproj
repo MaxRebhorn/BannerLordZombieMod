@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	skins.xml is an engine-level file. It is collected from XmlResource.MbprojXmls
+	(Module.CreateProcessedSkinsXMLForNative -> MBObjectManager.GetMergedXmlForNative
+	"soln_skins") rather than from the <Xmls> list in SubModule.xml, so this project
+	file is what makes our zombie race visible to the game at all.
+-->
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="solution">
+  <file id="soln_skins" name="ModuleData/skins.xml" type="skin" />
+  <!--
+    TODO.md item 6: same story as skins.xml above - voice_definitions.xml is
+    also only collected via XmlResource.MbprojXmls (soln_voice_definitions),
+    never by same-filename-across-modules auto-merge. Confirmed missing this
+    entry means the zombie voice_definition never merges in at all
+    (SkinVoiceManager kept reporting the vanilla count of 13 "human"
+    definitions) - this line is what actually registers it.
+  -->
+  <file id="soln_voice_definitions" name="ModuleData/voice_definitions.xml" type="voice_definitions" />
+  <!--
+    TODO.md item 6, take two: module_sounds.xml turned out to need this exact
+    same registration - it is NOT auto-merged by filename either (that was a
+    wrong assumption; Native's own project.mbproj has a "soln_module_sound"
+    entry for its own module_sounds.xml, which is what gave it away). Without
+    this line every zombieplague/voice/* SoundEvent.GetEventIdFromString call
+    was silently returning an invalid id the whole time - not a mono/stereo
+    or category problem, our sounds were simply never registered with the
+    game at all.
+  -->
+  <file id="soln_module_sound" name="ModuleData/module_sounds.xml" type="module_sound" />
+</base>

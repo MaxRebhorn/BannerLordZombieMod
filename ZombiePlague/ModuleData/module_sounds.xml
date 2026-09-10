@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	type="module_sound">
+	<module_sounds>
+		<!--
+		TODO.md item 6: one named sound event per zombie voice purpose, each
+		pointing at ModuleSounds/<purpose>_<n>.ogg - a physical, purpose-named
+		copy of whichever source clip suits it, not a shared reference. That
+		is deliberate: swapping in a new recording for just "death" later
+		means dropping a new death_2.ogg in ModuleSounds/ (or replacing
+		death_1.ogg) and adding a <variation> line here - never touching any
+		other purpose or the C#/voice_definitions.xml side at all.
+
+		Root cause of "no sound at all" up to now: the audio files were sitting
+		in Sounds/, but per the official docs
+		(https://moddocs.bannerlord.com/playing-sounds/adding-custom-sounds/)
+		module_sounds.xml resolves `path` relative to ModuleSounds/, a
+		DIFFERENT folder - not Sounds/, and not ModuleData/. The event names
+		were valid (once project.mbproj registered this file), but every path
+		lookup was silently failing to find a real file. .ogg is also what the
+		docs' own example uses, so switched over from .wav here too.
+		-->
+		<module_sound
+			name="zombieplague/voice/attack_grunt"
+			sound_category="mission_voice"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="attack_grunt_1.ogg" weight="1.0" />
+		</module_sound>
+		<module_sound
+			name="zombieplague/voice/pain"
+			sound_category="mission_voice"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="pain_1.ogg" weight="1.0" />
+		</module_sound>
+		<module_sound
+			name="zombieplague/voice/death"
+			sound_category="mission_voice_shout"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="death_1.ogg" weight="1.0" />
+		</module_sound>
+		<module_sound
+			name="zombieplague/voice/yell"
+			sound_category="mission_voice_shout"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="yell_1.ogg" weight="1.0" />
+		</module_sound>
+		<!--
+		Ambient (campaign-mission) bark used by ZombieAmbientSoundMissionBehavior -
+		separate from attack_grunt so tuning one never affects the other.
+		-->
+		<module_sound
+			name="zombieplague/voice/ambient_growl"
+			sound_category="mission_voice_shout"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="ambient_growl_1.ogg" weight="1.0" />
+		</module_sound>
+		<!--
+		Played on the zombie greeting dialog line (AddZombieDialog in
+		ZombiePlagueCampaignBehavior.cs) - simplest possible test that a
+		module_sound actually plays at all, independent of the
+		voice_definitions.xml/agent-voice-override plumbing.
+		-->
+		<module_sound
+			name="zombieplague/voice/dialogue_greeting"
+			sound_category="mission_voice_shout"
+			min_pitch_multiplier="0.85"
+			max_pitch_multiplier="1.15">
+			<variation path="dialogue_greeting_1.ogg" weight="1.0" />
+		</module_sound>
+	</module_sounds>
+</base>

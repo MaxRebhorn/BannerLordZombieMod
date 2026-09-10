@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NPCCharacters>
+	<NPCCharacter
+		id="zombie_tier_1"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t1}Zombie"
+		level="10"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_tier_2"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t2}Zombie"
+		level="15"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_tier_3"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t3}Zombie"
+		level="20"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_tier_4"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t4}Zombie"
+		level="25"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_tier_5"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t5}Zombie"
+		level="30"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="zombie_tier_6"
+		default_group="Infantry"
+		name="{=zombieplague_troop_t6}Zombie"
+		level="35"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="30" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="40" />
+			<skill id="Polearm" value="30" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="40" />
+			<skill id="TwoHanded" value="20" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<!--
+		The very first zombie: much stronger than a regular tier troop so a
+		starting handful (see zombie_party_templates.xml's zombie_horde_template)
+		can reliably overpower a small looter band on its own, kicking the
+		plague off instead of dying to the first thing it runs into.
+	-->
+	<NPCCharacter
+		id="zombie_patient_zero"
+		default_group="Infantry"
+		name="{=zombieplague_troop_patient_zero}Patient Zero"
+		level="80"
+		occupation="Bandit"
+		culture="Culture.looters">
+		<face>
+			<face_key_template
+				value="BodyProperty.zombie_male" />
+		</face>
+		<skills>
+			<skill id="Athletics" value="290" />
+			<skill id="Bow" value="20" />
+			<skill id="OneHanded" value="310" />
+			<skill id="Polearm" value="290" />
+			<skill id="Riding" value="0" />
+			<skill id="Throwing" value="250" />
+			<skill id="TwoHanded" value="80" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment slot="Item0" id="Item.peasant_2haxe_1_t1" />
+				<equipment slot="Body" id="Item.bandit_envelope_dress_v1" />
+				<equipment slot="Leg" id="Item.wrapped_shoes" />
+			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+</NPCCharacters>

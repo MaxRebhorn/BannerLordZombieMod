@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<partyTemplates>
+	<MBPartyTemplate
+		id="zombie_horde_template">
+		<!--
+			Patient Zero, not a regular tier-1 zombie: the very first horde needs
+			to be able to beat a small looter band on its own to actually kick
+			the plague off, not get wiped by the first thing it meets.
+		-->
+		<stacks>
+			<PartyTemplateStack
+				min_value="8"
+				max_value="12"
+				troop="NPCCharacter.zombie_patient_zero" />
+		</stacks>
+	</MBPartyTemplate>
+	<!-- Debug ladder templates, used only by the zombie.t* console commands. -->
+	<MBPartyTemplate
+		id="zombie_debug_clone_template">
+		<stacks>
+			<PartyTemplateStack
+				min_value="5"
+				max_value="8"
+				troop="NPCCharacter.zombie_debug_clone" />
+		</stacks>
+	</MBPartyTemplate>
+	<MBPartyTemplate
+		id="zombie_debug_oneroster_template">
+		<stacks>
+			<PartyTemplateStack
+				min_value="5"
+				max_value="8"
+				troop="NPCCharacter.zombie_debug_oneroster" />
+		</stacks>
+	</MBPartyTemplate>
+</partyTemplates>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	FaceGen resolves a race's monster by the race's own name
+	(GetBaseMonsterFromRace -> GetObject<Monster>(raceName)), so the "zombie" race
+	from ModuleData/skins.xml needs a Monster with exactly that id. Both entries
+	inherit everything from their human counterpart via base_monster - a zombie
+	moves, fights and ragdolls like a person, it is only green.
+-->
+<Monsters>
+	<Monster
+		id="zombie"
+		base_monster="human" />
+	<Monster
+		id="zombie_settlement"
+		base_monster="human_settlement" />
+</Monsters>

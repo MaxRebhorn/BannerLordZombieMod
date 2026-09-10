@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<voice_definitions>
+	<!--
+	TODO.md item 6: this file is merged into Native's own voice_definitions.xml
+	at startup (MBObjectManager.GetMergedXmlForNative("soln_voice_definitions"),
+	same generic same-filename-across-modules merge every ModuleData system
+	file uses - no SubModule.xml registration needed) - it does not replace
+	anything, it just adds one more entry to the "human" skeleton class pool
+	Native's own 13 (male_01..08, female_01..05) already populate.
+
+	Merely existing in the pool is not enough on its own: the engine assigns
+	voice_definitions to agents at random from that pool, with no concept of
+	race/persona, so a Vlandian soldier could just as easily get handed this
+	one. ZombieAmbientSoundMissionBehavior forces it onto zombie-race agents
+	specifically via Agent.AgentVisuals.SetVoiceDefinitionIndex - see that
+	class for the index-lookup part (the one piece that needs an in-game
+	log check to confirm, since the C# API has no lookup-by-name).
+
+	Only the voice types we actually have distinct sounds for are listed -
+	Grunt (attack), Pain (hit), Death, Yell (charge/aggro). Missing types
+	(Jump, Stun, Fear, Victory, ...) just play nothing for this definition
+	until Sounds/ grows enough clips to fill them in.
+	-->
+	<voice_definition
+		name="zombieplague_zombie_01"
+		sound_and_collision_info_class="human"
+		only_for_npcs="true"
+		min_pitch_multiplier="0.85"
+		max_pitch_multiplier="1.15">
+		<voice
+			type="Grunt"
+			path="zombieplague/voice/attack_grunt"
+			face_anim="grunt" />
+		<voice
+			type="Pain"
+			path="zombieplague/voice/pain"
+			face_anim="hit" />
+		<voice
+			type="Death"
+			path="zombieplague/voice/death"
+			face_anim="death" />
+		<voice
+			type="Yell"
+			path="zombieplague/voice/yell"
+			face_anim="yell" />
+	</voice_definition>
+</voice_definitions>

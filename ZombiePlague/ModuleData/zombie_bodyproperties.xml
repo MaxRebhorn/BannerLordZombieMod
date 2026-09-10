@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Own face templates for the horde. Not a cosmetic nicety: MBBodyProperty is an
+	MBObjectBase, so it is a single shared instance per id. ZombieTroopSetup
+	rewrites the pigmentation of these templates at runtime, and doing that to
+	BodyProperty.looter would turn every vanilla looter green as well.
+
+	Keys and tags are copied verbatim from SandBoxCore/sandboxcore_bodyproperties.xml
+	(zombie_male <- looter, zombie_female <- townswoman_empire); only the skin
+	colour is changed, and that happens in code.
+-->
+<BodyProperties>
+	<BodyProperty
+		id="zombie_male">
+		<BodyPropertiesMin
+			version="4"
+			age="24.19"
+			weight="0.224"
+			build="0.3"
+			key="0000000000000000111111111111111000001100000100000001000000100000000106030000000000000000000000000000000000000000000000001C040002" />
+		<BodyPropertiesMax
+			version="4"
+			age="70.19"
+			weight="0.99"
+			build="0.99"
+			key="0020FC0FDEFC3A5CFFEEEFFFEEFEFFFEFFFFFFFFEFEFFFFFFEEFFFEFFFFFEFFE00FEE6030FFFEFEE000000000000000000000000000000000000000067FC9145" />
+		<hair_tags>
+			<hair_tag name="LongAndBushy" />
+			<hair_tag name="TiedAcrossBack" />
+			<hair_tag name="SlickedLong" />
+			<hair_tag name="PartedAndCombedBack" />
+			<hair_tag name="BraidedAndLong" />
+			<hair_tag name="Bandit Hair 3" />
+		</hair_tags>
+		<beard_tags>
+			<beard_tag name="HeavyShortBeard" />
+			<beard_tag name="PointedShortBeard" />
+			<beard_tag name="LongBeard" />
+			<beard_tag name="LongScragglyBeard" />
+			<beard_tag name="BushyBandholz" />
+			<beard_tag name="GaribaldiBeard" />
+		</beard_tags>
+		<tattoo_tags>
+			<tattoo_tag name="Scar1" />
+			<tattoo_tag name="Scar2" />
+			<tattoo_tag name="Scar4" />
+			<tattoo_tag name="Scar5" />
+			<tattoo_tag name="Scar7" />
+		</tattoo_tags>
+	</BodyProperty>
+	<BodyProperty
+		id="zombie_female">
+		<BodyPropertiesMin
+			version="4"
+			age="19.05"
+			weight="0.2918"
+			build="0.2886"
+			key="00082008000000000070010000001100001000110010200000000001010000000040600304010000000000000000000000000000000000000000000010880000" />
+		<BodyPropertiesMax
+			version="4"
+			age="65.36"
+			weight="0.7701"
+			build="0.838"
+			key="001EF80FC0000015FFFFEFEFFEEFFF7EFCFFFFF8CFF3EFFEFFFFFFFFFFFFFFFF00B8B0030BFFFFEF000000000000000000000000000000000000000061800000" />
+		<hair_tags>
+			<hair_tag name="LongOvershoulder" />
+			<hair_tag name="TiedLongOverShoulder" />
+			<hair_tag name="AboveShoulderLength" />
+			<hair_tag name="TiedInBack" />
+			<hair_tag name="BraidedInBack" />
+		</hair_tags>
+		<tattoo_tags>
+			<tattoo_tag name="Scar1" />
+			<tattoo_tag name="Scar2" />
+			<tattoo_tag name="Scar4" />
+		</tattoo_tags>
+	</BodyProperty>
+</BodyProperties>

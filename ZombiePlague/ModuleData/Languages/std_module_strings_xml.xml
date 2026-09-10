@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/ModuleLanguage.xsd">
+  <tags>
+    <tag language="English" />
+  </tags>
+  <strings>
+    <string id="zombieplague_module_name" text="Zombie Plague" />
+    <string id="zombieplague_session_ready" text="Zombie Plague campaign behavior is active." />
+  </strings>
+</base>
