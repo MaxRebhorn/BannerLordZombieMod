@@ -15,16 +15,34 @@ public sealed class SubModule : MBSubModuleBase
 		base.OnSubModuleLoad();
 		Infrastructure.ZombieLog.Info("=== OnSubModuleLoad ===");
 
-		try
+		// Patched class-by-class rather than one PatchAll(assembly) call: a
+		// single bad patch (confirmed - see ZombieRecruitBlockPatch's parameter
+		// name bug) throws out of PatchAll entirely, silently skipping every
+		// class Harmony hadn't reached yet in its enumeration order. That
+		// meant a typo in one unrelated patch could - and did - leave the
+		// siege/position crash-guard patches unapplied for an entire session,
+		// with no symptom besides those crashes still happening. Isolating
+		// each class means one broken patch only loses that one patch.
+		_harmony = new Harmony("ZombiePlague");
+		int patched = 0;
+		int failed = 0;
+		foreach (System.Type type in typeof(SubModule).Assembly.GetTypes())
 		{
-			_harmony = new Harmony("ZombiePlague");
-			_harmony.PatchAll();
-			Infrastructure.ZombieLog.Info("Harmony patches applied");
+			try
+			{
+				if (_harmony.CreateClassProcessor(type).Patch() != null)
+				{
+					patched++;
+				}
+			}
+			catch (System.Exception exception)
+			{
+				failed++;
+				Infrastructure.ZombieLog.Error("Harmony patch failed for " + type.FullName, exception);
+			}
 		}
-		catch (System.Exception exception)
-		{
-			Infrastructure.ZombieLog.Error("Harmony PatchAll failed", exception);
-		}
+
+		Infrastructure.ZombieLog.Info("Harmony patching complete: " + patched + " class(es) patched, " + failed + " failed");
 
 		Debug.Print("ZombiePlague: OnSubModuleLoad");
 	}

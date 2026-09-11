@@ -77,6 +77,16 @@ internal static class SiegeEndPositionGuardPatch
 			ZombieLog.Info("SiegeEndPositionGuard: " + __instance.StringId + " left the siege of " + settlement.StringId
 				+ " - forcing position to GatePosition before native siege-camp cleanup continues.");
 			__instance.Position = settlement.GatePosition;
+
+			// Mirror image of ZombiePartyComponent.SwapToLordForSiege (see
+			// ExecuteAction/TryHandleActiveSiege): swap back to ZombiePartyComponent
+			// now that the siege is genuinely over, restoring IsBandit and
+			// everything gated on it. LeaderHero still resolves correctly here -
+			// the swap-back itself is what clears it.
+			if (__instance.LeaderHero != null)
+			{
+				ZombiePartyComponent.SwapBackFromSiege(__instance, __instance.LeaderHero);
+			}
 		}
 		catch (Exception ex)
 		{

@@ -477,6 +477,11 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 		if (party.TargetSettlement != settlement || party.DefaultBehavior != AiBehavior.BesiegeSettlement)
 		{
 			ZombieLog.Info("TryHandleActiveSiege: " + party.StringId + " re-affirming siege of " + settlement.StringId);
+			if (party.LeaderHero != null)
+			{
+				ZombiePartyComponent.SwapToLordForSiege(party, party.LeaderHero);
+			}
+
 			SetPartyAiAction.GetActionForBesiegingSettlement(party, settlement, MobileParty.NavigationType.Default, isFromPort: false);
 		}
 
@@ -1080,6 +1085,17 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 				if (party.TargetSettlement != candidate.TargetSettlement || party.DefaultBehavior != AiBehavior.BesiegeSettlement)
 				{
 					ZombieLog.Info("UpdateZombieBehavior: " + party.StringId + " (" + total + ") -> siege " + candidate.TargetSettlement.StringId);
+					// Vanilla's siege pipeline expects a real Lord party (see
+					// ZombiePartyComponent.SwapToLordForSiege's doc comment for the
+					// confirmed crash this works around) - swap before, not after,
+					// GetActionForBesiegingSettlement so it never runs on a
+					// still-bandit-typed party. Swapped back once the siege ends,
+					// see SiegeEndPositionGuardPatch.
+					if (party.LeaderHero != null)
+					{
+						ZombiePartyComponent.SwapToLordForSiege(party, party.LeaderHero);
+					}
+
 					SetPartyAiAction.GetActionForBesiegingSettlement(party, candidate.TargetSettlement, MobileParty.NavigationType.Default, isFromPort: false);
 				}
 				break;
@@ -1726,6 +1742,18 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
+
+		// Always logged, even when nothing below ends up respawning anything:
+		// a zombie party can be destroyed with no pending battle-loss tally at
+		// all (e.g. vanilla silently disbanding one mid-siege - confirmed via
+		// a 4001-troop horde vanishing seconds into besieging a castle, with
+		// zero other log output anywhere), and that used to be indistinguishable
+		// from the party simply never having existed. This line is the only
+		// record that it happened and roughly when/where.
+		ZombieLog.Info("OnMobilePartyDestroyed: " + party.StringId + " destroyed at (" + party.Position.X.ToString("0.0")
+			+ "," + party.Position.Y.ToString("0.0") + "), BesiegedSettlement="
+			+ (party.BesiegedSettlement?.StringId ?? "null") + ", TargetSettlement=" + (party.TargetSettlement?.StringId ?? "null")
+			+ ", LeaderHero=" + (party.LeaderHero?.Name.ToString() ?? "null") + ", partyComponent=" + party.PartyComponent?.GetType().Name);
 
 		_prisonSnapshots.Remove(party);
 		_nextWanderRoll.Remove(party);

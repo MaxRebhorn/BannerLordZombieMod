@@ -224,3 +224,76 @@ Cheat Command – needed to test hero conversion + sieges.
 AI Phase System – replaces the core logic, do this last to avoid conflicts.
 
 Let me know if you need help fleshing out any specific method signature or edge case (e.g., what happens to a turned hero's spouse/children, or how to handle a hero with an existing kingdom).
+
+## 2026-09-11: Siege rework - why sieges keep failing, and the planned fix
+
+### Root cause, confirmed this session
+
+Sieging is currently disabled again (`ZombieBehaviorConfig.SiegeDisabledPendingInvestigation = true`). Three
+different fixes attempted this session all failed at the exact same "leaving a siege" transition,
+each in a different way (raw crash, silent party vanish, party disbanded via a lost-battle
+hero-capture). See `ZombiePartyComponent.SwapToLordForSiege`'s doc comment and
+`ZombieBehaviorConfig.SiegeDisabledPendingInvestigation`'s doc comment for the full blow-by-blow.
+
+The underlying reason the swapped-to-`LordPartyComponent` horde lost its assault outright (0 kills
+credited, defenders took zero losses) traces back to `ZombieSpawner.cs`'s
+`party.Ai.SetDoNotMakeNewDecisions(true)` - set permanently on every zombie party so vanilla's own
+AI decision loop never fights with `ZombiePlagueCampaignBehavior`'s hourly-tick movement orders.
+That same vanilla decision loop is also what drives a besieging party's siege-engine construction
+(assigning workers/engineers, spending time/resources). With decisions fully disabled, a besieging
+horde never builds a single ladder, ram, or tower - an assault with no way to reach the walls is a
+guaranteed one-sided defender win regardless of attacker count or quality, which is exactly what the
+logs showed (12001 level-80 Patient Zeros, 0 damage dealt).
+
+### Planned fix, two parts (not yet implemented - written up per user request instead of coded)
+
+**Part A - lean into "zombies don't build siege equipment" as an intentional design choice, not
+an accident to route around.** Rather than re-enabling vanilla decision-making during a siege (which
+would let the horde behave like a normal lord's army and reopens all the state-consistency questions
+that caused this session's three failures), explicitly deny zombies any siege engines at all:
+- Patch `DefaultSiegeEventModel.GetAvailableAttackerRangedSiegeEngines` /
+  `GetAvailableAttackerRamSiegeEngines` / `GetAvailableAttackerTowerSiegeEngines` (all in
+  `TaleWorlds.CampaignSystem.GameComponents`) to return an empty sequence whenever the besieging
+  party is a zombie party - a Harmony postfix clearing `__result`, same pattern as every other
+  patch in `src/Patches/`.
+- This is more reliable than just leaving the leader hero's Engineering skill at 0: `SiegeEngineType.Difficulty`
+  (in `TaleWorlds.Core`) gates which engines are *available* to build via that skill check, but a
+  difficulty-0 engine (e.g. a basic ram) might still slip through at Engineering 0 - forcing the
+  available-engines list empty removes any ambiguity.
+- Keep `SetDoNotMakeNewDecisions(true)` exactly as it is - no need to touch it, since the horde was
+  never going to use engine-construction decision-making anyway once the list is forced empty.
+
+**Part B - the actual compensating mechanic: live troop conversion during the assault itself.**
+Since the horde will now *always* attack a settlement's walls with zero siege equipment, it needs a
+way to not just lose every assault outright. New feature: a mission behavior active during a siege
+assault mission where the zombie clan is attacking, that listens for defender deaths in real time
+(agent-death event, filtered to defending-side, non-zombie casualties) and immediately spawns a
+converted zombie troop into the attacking formation *during the still-ongoing fight* - not the
+existing post-battle `OnMapEventEnded` tally-and-respawn-later path, which only reinforces the horde
+*after* the battle is fully over and already decided.
+
+Concretely: for each defender kill credited to the zombie side mid-mission, roll/queue a new zombie
+agent (matching `ZombieConversion.MapTally`'s existing tier-mapping-from-victim logic) and spawn it
+directly into the attacking formation via the mission's own agent-spawn API, so the horde's effective
+combat strength climbs *during* the assault instead of only shrinking. The design goal stated by the
+user: "they fight, they lose a bunch of troops, but they also gain troops whilst the enemy only
+loses troops" - i.e. the walls-with-no-ladders handicap gets offset by an attrition mechanic that
+favors the zombie side over a long enough fight, rather than by giving them equipment at all.
+
+Open questions to resolve before implementing:
+- Where exactly to hook this - `MissionBehaviorBase.OnAgentRemoved`/`OnAgentDeleted` (mission-side,
+  matches `ZombieAmbientSoundMissionBehavior`'s existing pattern in `src/Missions/`) is the likely
+  spot, filtered by `ZombieClanUtil.IsZombieAgent`/battle side the same way `ZombieNoRoutPatch`
+  filters `MapEventSide.Parties`.
+- Spawning a fresh agent mid-mission on the correct formation/side without it needing to path in
+  from off-screen (should appear where the killed defender was, or at the horde's existing siege
+  position) needs checking against whatever agent-spawn API the engine exposes mid-mission (`Mission.
+  SpawnAgent`or similar) - not yet verified against decompiled source.
+- Whether this should also apply during the earlier plain "hunt"/"raid" mission types (arguably yes,
+  for consistency) or stay siege-assault-specific per the user's framing.
+- Balance: what fraction of defender kills convert live vs. how many just die outright (a 100%
+  conversion rate risks trivializing every fight); likely a new `ZombieBehaviorConfig` field similar
+  to the existing `KillConversionRate*` tiers already used for the post-battle path.
+
+Once both parts exist, re-test with `SiegeDisabledPendingInvestigation = false` and
+`zombie.create_op_sieging_party` before re-enabling siege as a normal AI-chosen action.

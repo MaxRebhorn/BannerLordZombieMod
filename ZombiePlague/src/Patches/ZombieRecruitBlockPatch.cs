@@ -11,7 +11,7 @@ namespace ZombiePlague.Patches;
 internal static class ZombieRecruitBlockPatch
 {
 	[HarmonyPrefix]
-	private static bool Prefix(Hero notable, int index, Settlement settlement, ref float __result)
+	private static bool Prefix(Hero hero, int index, Settlement settlement, ref float __result)
 	{
 		if (!ZombieBehaviorConfig.BlockRecruitmentEnabled || !(ZombieVillageRaidBehavior.Instance?.IsVillageDebuffed(settlement) ?? false))
 		{

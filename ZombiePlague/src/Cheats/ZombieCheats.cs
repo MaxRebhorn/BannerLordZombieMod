@@ -246,7 +246,7 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("spawn_hero_horde", "zombie")]
 	public static string SpawnHeroHorde(List<string> strings)
 	{
-		MobileParty party = SpawnHeroLedParty(20, out Hero hero, out string error);
+		MobileParty party = SpawnHeroLedParty(20, ZombieIds.TroopId(1), strongLeader: false, out Hero hero, out string error);
 		if (party == null)
 		{
 			return error;
@@ -273,7 +273,7 @@ public static class ZombieCheats
 			troopCount = parsed;
 		}
 
-		MobileParty party = SpawnHeroLedParty(troopCount, out Hero hero, out string error);
+		MobileParty party = SpawnHeroLedParty(troopCount, ZombieIds.TroopId(1), strongLeader: false, out Hero hero, out string error);
 		if (party == null)
 		{
 			return error;
@@ -285,13 +285,67 @@ public static class ZombieCheats
 	}
 
 	/// <summary>
-	/// Shared by spawn_hero_horde and create_sieging_party: a brand-new hero
-	/// born directly into the zombie clan (HeroCreator's `faction` param, so no
-	/// risky reassignment of an existing lord's clan), given the standard zombie
-	/// green race/face, leading a fresh `troopCount`-strong tier-1 zombie party
-	/// spawned near the player.
+	/// Every siege attempted so far has been broken by the defenders - this is
+	/// the "just win the damn siege" cheat: the strongest troop in the mod
+	/// (zombie_patient_zero, level 80 vs. tier_6's level 35 - see
+	/// zombie_troops.xml) instead of the usual tier-1 filler, led by a hero
+	/// built from the single strongest living lord's CharacterObject (highest
+	/// Level, not just "any lord") with every combat/tactics skill immediately
+	/// maxed out. Troop count still defaults well past
+	/// SettlementSiegeTroopThreshold and is still overridable.
 	/// </summary>
-	private static MobileParty SpawnHeroLedParty(int troopCount, out Hero hero, out string error)
+	[CommandLineFunctionality.CommandLineArgumentFunction("create_op_sieging_party", "zombie")]
+	public static string CreateOpSiegingParty(List<string> strings)
+	{
+		int troopCount = 500;
+		if (strings != null && strings.Count > 0 && int.TryParse(strings[0], out int parsed) && parsed > 0)
+		{
+			troopCount = parsed;
+		}
+
+		MobileParty party = SpawnHeroLedParty(troopCount, ZombieIds.PatientZeroTroopId, strongLeader: true, out Hero hero, out string error);
+		if (party == null)
+		{
+			return error;
+		}
+
+		return string.Format(
+			"OK create_op_sieging_party: Held '{0}' (Anfuehrer, alle Kampf-/Fuehrungsskills maximiert) + {1} Patient-Zero-Zombies in Party '{2}' ({3:0} Einheiten entfernt).",
+			hero.Name, troopCount, party.Name, party.Position.Distance(MobileParty.MainParty.Position));
+	}
+
+	/// <summary>
+	/// Skills SpawnHeroLedParty maxes out for strongLeader: true - every skill
+	/// with a direct combat or battle-simulation effect. Tactics/Leadership are
+	/// included alongside the weapon skills since sieges you don't personally
+	/// fight in are resolved by simulation, which reads party-level skills like
+	/// these, not just individual troop stats.
+	/// </summary>
+	private static readonly TaleWorlds.Core.SkillObject[] StrongLeaderSkills =
+	{
+		TaleWorlds.Core.DefaultSkills.OneHanded,
+		TaleWorlds.Core.DefaultSkills.TwoHanded,
+		TaleWorlds.Core.DefaultSkills.Polearm,
+		TaleWorlds.Core.DefaultSkills.Bow,
+		TaleWorlds.Core.DefaultSkills.Crossbow,
+		TaleWorlds.Core.DefaultSkills.Throwing,
+		TaleWorlds.Core.DefaultSkills.Riding,
+		TaleWorlds.Core.DefaultSkills.Athletics,
+		TaleWorlds.Core.DefaultSkills.Tactics,
+		TaleWorlds.Core.DefaultSkills.Leadership
+	};
+
+	/// <summary>
+	/// Shared by spawn_hero_horde, create_sieging_party and
+	/// create_op_sieging_party: a brand-new hero born directly into the zombie
+	/// clan (HeroCreator's `faction` param, so no risky reassignment of an
+	/// existing lord's clan), given the standard zombie green race/face,
+	/// leading a fresh `troopCount`-strong `troopId` party spawned near the
+	/// player. `strongLeader` picks the single strongest living lord as the
+	/// stat/equipment template (instead of just "any lord") and maxes every
+	/// skill in StrongLeaderSkills immediately after creation.
+	/// </summary>
+	private static MobileParty SpawnHeroLedParty(int troopCount, string troopId, bool strongLeader, out Hero hero, out string error)
 	{
 		hero = null;
 		error = null;
@@ -311,7 +365,10 @@ public static class ZombieCheats
 				return null;
 			}
 
-			CharacterObject template = Hero.AllAliveHeroes.FirstOrDefault(h => h.IsLord)?.CharacterObject ?? Hero.MainHero.CharacterObject;
+			CharacterObject template = strongLeader
+				? Hero.AllAliveHeroes.Where(h => h.IsLord).OrderByDescending(h => h.CharacterObject.Level).FirstOrDefault()?.CharacterObject
+					?? Hero.MainHero.CharacterObject
+				: Hero.AllAliveHeroes.FirstOrDefault(h => h.IsLord)?.CharacterObject ?? Hero.MainHero.CharacterObject;
 			hero = HeroCreator.CreateSpecialHero(template, bornSettlement: null, faction: zombieClan, supporterOfClan: null, age: -1);
 			if (hero == null)
 			{
@@ -322,10 +379,18 @@ public static class ZombieCheats
 			hero.Culture = zombieClan.Culture;
 			ZombieConversion.ApplyZombieAppearance(hero);
 
-			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(1));
+			if (strongLeader)
+			{
+				foreach (TaleWorlds.Core.SkillObject skill in StrongLeaderSkills)
+				{
+					hero.HeroDeveloper.SetInitialSkillLevel(skill, 300);
+				}
+			}
+
+			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(troopId);
 			if (troop == null)
 			{
-				error = "Zombie-Truppe nicht gefunden.";
+				error = "Zombie-Truppe nicht gefunden: " + troopId;
 				return null;
 			}
 
@@ -356,7 +421,8 @@ public static class ZombieCheats
 			ZombiePartyComponent.ConvertPartyToZombieLeaderParty(party, hero);
 
 			ZombieLog.Info("SUCCESS SpawnHeroLedParty: hero=" + hero.Name + " (" + hero.StringId + ") -> " + party.StringId
-				+ ", troops=" + party.MemberRoster.TotalManCount + ", LeaderHero=" + (party.LeaderHero?.Name.ToString() ?? "NULL"));
+				+ ", troops=" + party.MemberRoster.TotalManCount + ", LeaderHero=" + (party.LeaderHero?.Name.ToString() ?? "NULL")
+				+ ", strongLeader=" + strongLeader);
 
 			return party;
 		}

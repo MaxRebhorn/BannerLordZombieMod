@@ -130,17 +130,30 @@ internal static class ZombieBehaviorConfig
 	public static int SettlementSiegeTroopThreshold = 400;
 	public static float SiegeStrengthMultiplier = 1.5f;
 
-	// Re-enabled: a hero-led ZombiePartyComponent crashed immediately on
-	// SetPartyAiAction.GetActionForBesiegingSettlement (confirmed via crash
-	// dump: 0xC0000005, null-read at field offset 0x18) - something vanilla's
-	// siege pipeline expects from a "real" lord party was missing on ours,
-	// and root-causing the exact field needed symbol-resolution tooling this
-	// environment doesn't have. Workaround (see
-	// ZombiePartyComponent.SwapToLordForSiege): the party is temporarily
-	// swapped to an actual LordPartyComponent only while besieging, then
-	// swapped back to ZombiePartyComponent (restoring IsBandit) once it
-	// stops. Toggle kept in case this needs to be disabled again quickly.
-	public static bool SiegeDisabledPendingInvestigation = false;
+	// Disabled again - three different fixes have now failed at the exact
+	// same "leaving a siege" transition, each in a different way:
+	//   1. Raw ZombiePartyComponent (BanditPartyComponent-derived): instant
+	//      0xC0000005 the moment GetActionForBesiegingSettlement ran.
+	//   2. Same component, unguarded siege-end: no crash, but the party
+	//      silently vanished (CampaignEvents.MobilePartyDestroyed fired with
+	//      no battle-loss tally, no log, no trace).
+	//   3. Swapped to a real LordPartyComponent for the siege's duration
+	//      (ZombiePartyComponent.SwapToLordForSiege) specifically to satisfy
+	//      whatever (1) needed: sieging itself worked, but the assault battle
+	//      that resolved the siege was lost outright (0 kills, ZombieNoRoutPatch
+	//      had to block a rout) and the party's own hero ended up dead/captured
+	//      (LeaderHero null moments before MobilePartyDestroyed) - which is
+	//      fatal for a real lord party, since vanilla disbands a lord's party
+	//      when the lord dies/is captured, same as any human lord. The game
+	//      crashed again seconds later.
+	// Three fixes, three different failure shapes, same seam every time -
+	// strong evidence the vanilla siege-end pipeline just isn't compatible
+	// with a zombie-clan-owned party regardless of component type, not
+	// something patchable without real stack-trace/symbol tooling this
+	// environment doesn't have. SwapToLordForSiege/SwapBackFromSiege are left
+	// in place (dead code while this is false) for whoever revisits this with
+	// better tooling.
+	public static bool SiegeDisabledPendingInvestigation = true;
 
 	// "High quality" horde: at least half the roster is tier 3+ (regular soldiers
 	// and up, not just looters/recruits) - such a party raids sooner.
