@@ -5,3 +5,7 @@ obj/
 *.log
 *.dmp
 *.suo
+
+# SteamCMD downloads its own runtime + your personal Steam userdata cache
+# here on first run - never commit this, it's local tooling, not source.
+tools/steamcmd/

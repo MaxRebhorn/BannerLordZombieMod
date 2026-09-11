@@ -1,0 +1,12 @@
+Zombie Plague turns the campaign map into a slow-burning apocalypse. A single "Patient Zero" horde spawns near a random settlement and grows by hunting parties, raiding villages, and converting defeated heroes - splitting into new hordes once it gets large enough.
+
+Features:
+- Zombie hordes that hunt, raid, and (once hero-led) besiege settlements, with behavior that shifts as a horde grows from small to medium to large.
+- Village raids convert a settlement's prosperity into fresh zombies and leave it debuffed (prosperity decay + blocked recruitment) for a while afterward.
+- Zombies are immune to night/wounded/over-size speed penalties, battle panic, and hunger/wage morale penalties - a mindless horde doesn't get tired or scared.
+- Defeated enemy heroes have a chance to turn instead of escaping, eventually letting a horde lead its own siege.
+- Fully configurable through MCM (Mod Configuration Menu): difficulty presets, starting spawn options, horde-size thresholds, settlement debuffs, village raid balance, and dozens of AI/behavior knobs.
+
+Requires: Harmony, UIExtenderEx, ButterLib, and MCM (Mod Configuration Menu) - all available on the Workshop.
+
+This is an actively developed mod - expect balance changes and bug fixes between updates. Please report crashes with your zombieplague.log and a description of what was happening.

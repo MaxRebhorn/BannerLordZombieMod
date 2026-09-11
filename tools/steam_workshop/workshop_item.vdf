@@ -1,0 +1,11 @@
+"workshopitem"
+{
+	"appid"		"261550"
+	"publishedfileid"		"3799576293"
+	"contentfolder"		"E:\\Projects\\ZombiePlagueMod\\ZombiePlague"
+	"previewfile"		"E:\\Projects\\ZombiePlagueMod\\tools\\workshop_preview.png"
+	"visibility"		"1"
+	"title"		"Zombie Plague"
+	"description"		"See description.txt in this folder - paste its contents here or into the Workshop page after upload."
+	"changenote"		"Initial Workshop upload."
+}
