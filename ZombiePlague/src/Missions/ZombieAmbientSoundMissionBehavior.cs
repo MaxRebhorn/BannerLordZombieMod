@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -36,15 +37,41 @@ public sealed class ZombieAmbientSoundMissionBehavior : MissionBehavior
 	private float _timer;
 	private int _zombieVoiceDefinitionIndex = -1;
 	private bool _voiceIndexResolved;
+	private bool _tickErrorLogged;
 
 	public override MissionBehaviorType BehaviorType => MissionBehaviorType.Other;
 
 	public override void OnAgentBuild(Agent agent, Banner banner)
 	{
-		ApplyZombieVoiceIfNeeded(agent);
+		try
+		{
+			ApplyZombieVoiceIfNeeded(agent);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieAmbientSoundMissionBehavior.OnAgentBuild failed", ex);
+		}
 	}
 
 	public override void OnMissionTick(float dt)
+	{
+		try
+		{
+			OnMissionTickCore(dt);
+		}
+		catch (Exception ex)
+		{
+			// A single battle can tick hundreds of times - log the first
+			// failure only, to avoid flooding the log for the rest of it.
+			if (!_tickErrorLogged)
+			{
+				_tickErrorLogged = true;
+				ZombieLog.Error("ZombieAmbientSoundMissionBehavior.OnMissionTick failed (further failures this mission are suppressed)", ex);
+			}
+		}
+	}
+
+	private void OnMissionTickCore(float dt)
 	{
 		_timer += dt;
 		if (_timer < ZombieBehaviorConfig.AmbientSoundIntervalSeconds)

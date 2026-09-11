@@ -81,10 +81,19 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 
 		foreach (MobileParty party in MobileParty.AllBanditParties.ToList())
 		{
-			if (ZombieClanUtil.IsZombieParty(party))
+			if (!ZombieClanUtil.IsZombieParty(party))
+			{
+				continue;
+			}
+
+			try
 			{
 				TrySplitZombieParty(party);
 				ReinforceIfWeak(party);
+			}
+			catch (Exception ex)
+			{
+				ZombieLog.Error("OnDailyTick: failed for " + party.StringId, ex);
 			}
 		}
 	}
@@ -1273,12 +1282,28 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
 		ZombieLog.Info("=== OnSessionLaunched ===");
-		ZombieConversion.ClearCache();
-		ZombieSpawner.LogObjectDiagnostics();
-		ZombieTroopSetup.Apply();
-		AddZombieDialog(campaignGameStarter);
-		MakeZombiesHostileToEveryone();
-		ReapplyZombieAppearanceToConvertedHeroes();
+
+		// Each step is independent setup work - a failure in one (e.g. bad
+		// troop XML) must not skip the rest, since some of these (dialog
+		// registration, hostility) are needed for the session to work at all.
+		RunSessionLaunchStep("ClearCache", ZombieConversion.ClearCache);
+		RunSessionLaunchStep("LogObjectDiagnostics", ZombieSpawner.LogObjectDiagnostics);
+		RunSessionLaunchStep("ZombieTroopSetup.Apply", ZombieTroopSetup.Apply);
+		RunSessionLaunchStep("AddZombieDialog", () => AddZombieDialog(campaignGameStarter));
+		RunSessionLaunchStep("MakeZombiesHostileToEveryone", MakeZombiesHostileToEveryone);
+		RunSessionLaunchStep("ReapplyZombieAppearanceToConvertedHeroes", ReapplyZombieAppearanceToConvertedHeroes);
+	}
+
+	private static void RunSessionLaunchStep(string stepName, Action step)
+	{
+		try
+		{
+			step();
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("OnSessionLaunched: step '" + stepName + "' failed", ex);
+		}
 	}
 
 	/// <summary>
@@ -1418,13 +1443,20 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 
 	private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
 	{
-		MobileParty zombieParty = FindZombiePartyInEvent(mapEvent, out BattleSideEnum _);
-		if (zombieParty == null)
+		try
 		{
-			return;
-		}
+			MobileParty zombieParty = FindZombiePartyInEvent(mapEvent, out BattleSideEnum _);
+			if (zombieParty == null)
+			{
+				return;
+			}
 
-		_prisonSnapshots[zombieParty] = SnapshotRoster(zombieParty.PrisonRoster);
+			_prisonSnapshots[zombieParty] = SnapshotRoster(zombieParty.PrisonRoster);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("OnMapEventStarted failed", ex);
+		}
 	}
 
 	/// <summary>
@@ -1444,6 +1476,18 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 	/// captured is counted only for the surplus beyond the wounded.
 	/// </summary>
 	private void OnMapEventEnded(MapEvent mapEvent)
+	{
+		try
+		{
+			OnMapEventEndedCore(mapEvent);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("OnMapEventEnded failed", ex);
+		}
+	}
+
+	private void OnMapEventEndedCore(MapEvent mapEvent)
 	{
 		MobileParty zombieParty = FindZombiePartyInEvent(mapEvent, out BattleSideEnum zombieSide);
 		if (zombieParty == null)
@@ -1658,6 +1702,18 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 	}
 
 	private void OnMobilePartyDestroyed(MobileParty party, PartyBase destroyerParty)
+	{
+		try
+		{
+			OnMobilePartyDestroyedCore(party);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("OnMobilePartyDestroyed failed for " + party?.StringId, ex);
+		}
+	}
+
+	private void OnMobilePartyDestroyedCore(MobileParty party)
 	{
 		if (!ZombieClanUtil.IsZombieParty(party))
 		{

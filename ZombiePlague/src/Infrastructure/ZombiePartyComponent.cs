@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -51,9 +52,16 @@ internal sealed class ZombiePartyComponent : BanditPartyComponent
 	/// </summary>
 	public static void ConvertPartyToZombieLeaderParty(MobileParty party, Hero leader)
 	{
-		ZombiePartyComponent component = new(party.HomeSettlement);
-		party.SetPartyComponent(component);
-		component._leader = leader;
+		try
+		{
+			ZombiePartyComponent component = new(party.HomeSettlement);
+			party.SetPartyComponent(component);
+			component._leader = leader;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ConvertPartyToZombieLeaderParty failed for " + party?.StringId, ex);
+		}
 	}
 
 	/// <summary>
@@ -72,22 +80,36 @@ internal sealed class ZombiePartyComponent : BanditPartyComponent
 	/// </summary>
 	public static void SwapToLordForSiege(MobileParty party, Hero leader)
 	{
-		if (party.PartyComponent is LordPartyComponent)
+		try
 		{
-			return;
-		}
+			if (party.PartyComponent is LordPartyComponent)
+			{
+				return;
+			}
 
-		LordPartyComponent.ConvertPartyToLordParty(party, leader, leader);
+			LordPartyComponent.ConvertPartyToLordParty(party, leader, leader);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("SwapToLordForSiege failed for " + party?.StringId, ex);
+		}
 	}
 
 	/// <summary>Reverses SwapToLordForSiege once the party is no longer besieging - see that method's doc comment.</summary>
 	public static void SwapBackFromSiege(MobileParty party, Hero leader)
 	{
-		if (party.PartyComponent is ZombiePartyComponent)
+		try
 		{
-			return;
-		}
+			if (party.PartyComponent is ZombiePartyComponent)
+			{
+				return;
+			}
 
-		ConvertPartyToZombieLeaderParty(party, leader);
+			ConvertPartyToZombieLeaderParty(party, leader);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("SwapBackFromSiege failed for " + party?.StringId, ex);
+		}
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -19,11 +20,18 @@ internal static class PlayerFarsightPatch
 {
 	private static void Postfix(MobileParty party, bool includeDescriptions, ref ExplainedNumber __result)
 	{
-		if (!ZombieIds.FarsightEnabled || party != MobileParty.MainParty)
+		try
 		{
-			return;
-		}
+			if (!ZombieIds.FarsightEnabled || party != MobileParty.MainParty)
+			{
+				return;
+			}
 
-		__result = new ExplainedNumber(ZombieBehaviorConfig.FarsightSeeingRange, includeDescriptions);
+			__result = new ExplainedNumber(ZombieBehaviorConfig.FarsightSeeingRange, includeDescriptions);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("PlayerFarsightPatch.Postfix failed", ex);
+		}
 	}
 }

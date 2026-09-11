@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using SandBox.GameComponents;
 using TaleWorlds.MountAndBlade;
@@ -19,22 +20,37 @@ internal static class ZombieMoralePatch
 	[HarmonyPrefix]
 	private static bool CanPanicDueToMoralePrefix(Agent agent, ref bool __result)
 	{
-		if (!ZombieBehaviorConfig.ZombiePanicImmune || !ZombieClanUtil.IsZombieAgent(agent))
+		try
 		{
+			if (!ZombieBehaviorConfig.ZombiePanicImmune || !ZombieClanUtil.IsZombieAgent(agent))
+			{
+				return true;
+			}
+
+			__result = false;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieMoralePatch.CanPanicDueToMoralePrefix failed", ex);
 			return true;
 		}
-
-		__result = false;
-		return false;
 	}
 
 	[HarmonyPatch(nameof(SandboxBattleMoraleModel.GetEffectiveInitialMorale))]
 	[HarmonyPostfix]
 	private static void GetEffectiveInitialMoralePostfix(Agent agent, ref float __result)
 	{
-		if (ZombieClanUtil.IsZombieAgent(agent))
+		try
 		{
-			__result = ZombieBehaviorConfig.ZombieInitialMorale;
+			if (ZombieClanUtil.IsZombieAgent(agent))
+			{
+				__result = ZombieBehaviorConfig.ZombieInitialMorale;
+			}
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieMoralePatch.GetEffectiveInitialMoralePostfix failed", ex);
 		}
 	}
 }

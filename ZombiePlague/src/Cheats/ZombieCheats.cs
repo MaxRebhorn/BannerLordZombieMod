@@ -20,27 +20,35 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("spawn_near_player", "zombie")]
 	public static string SpawnNearPlayer(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		int troopCount = 10;
-		if (strings != null && strings.Count > 0 && int.TryParse(strings[0], out int parsed) && parsed > 0)
+			int troopCount = 10;
+			if (strings != null && strings.Count > 0 && int.TryParse(strings[0], out int parsed) && parsed > 0)
+			{
+				troopCount = parsed;
+			}
+
+			MobileParty party = ZombieSpawner.SpawnNearPlayer(troopCount);
+			if (party == null)
+			{
+				return "Spawn fehlgeschlagen - Details im Logfile (Configs/ModLogs/zombieplague_*.log).";
+			}
+
+			float distance = party.Position.Distance(MobileParty.MainParty.Position);
+			return string.Format(
+				"Zombie-Party '{0}' gespawnt: {1} Mann, {2:0} Einheiten entfernt (Sichtweite {3:0}).",
+				party.Name, party.MemberRoster.TotalManCount, distance, MobileParty.MainParty.SeeingRange);
+		}
+		catch (System.Exception exception)
 		{
-			troopCount = parsed;
+			ZombieLog.Error("spawn_near_player failed", exception);
+			return "spawn_near_player fehlgeschlagen: " + exception.Message;
 		}
-
-		MobileParty party = ZombieSpawner.SpawnNearPlayer(troopCount);
-		if (party == null)
-		{
-			return "Spawn fehlgeschlagen - Details im Logfile (Configs/ModLogs/zombieplague_*.log).";
-		}
-
-		float distance = party.Position.Distance(MobileParty.MainParty.Position);
-		return string.Format(
-			"Zombie-Party '{0}' gespawnt: {1} Mann, {2:0} Einheiten entfernt (Sichtweite {3:0}).",
-			party.Name, party.MemberRoster.TotalManCount, distance, MobileParty.MainParty.SeeingRange);
 	}
 
 	// --- Bisection ladder -------------------------------------------------------
@@ -93,44 +101,60 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("t5_battle", "zombie")]
 	public static string LadderT5(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		int looterCount = 10;
-		if (strings != null && strings.Count > 0 && int.TryParse(strings[0], out int parsed) && parsed > 0)
+			int looterCount = 10;
+			if (strings != null && strings.Count > 0 && int.TryParse(strings[0], out int parsed) && parsed > 0)
+			{
+				looterCount = parsed;
+			}
+
+			if (!ZombieSpawner.SpawnBattleTest(looterCount))
+			{
+				return "t5_battle FEHLGESCHLAGEN - Details im Engine-Log.";
+			}
+
+			return string.Format(
+				"OK t5_battle: {0} Looter vs {1} Zombies nebeneinander gespawnt. Vor/nach dem Kampf 'zombie.list' aufrufen, um das Wachstum zu pruefen.",
+				looterCount, looterCount * 2);
+		}
+		catch (System.Exception exception)
 		{
-			looterCount = parsed;
+			ZombieLog.Error("t5_battle failed", exception);
+			return "t5_battle fehlgeschlagen: " + exception.Message;
 		}
-
-		if (!ZombieSpawner.SpawnBattleTest(looterCount))
-		{
-			return "t5_battle FEHLGESCHLAGEN - Details im Engine-Log.";
-		}
-
-		return string.Format(
-			"OK t5_battle: {0} Looter vs {1} Zombies nebeneinander gespawnt. Vor/nach dem Kampf 'zombie.list' aufrufen, um das Wachstum zu pruefen.",
-			looterCount, looterCount * 2);
 	}
 
 	private static string RunLadder(string label, bool useZombieClan, string templateId)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		MobileParty party = ZombieSpawner.SpawnLadderTest(label, useZombieClan, templateId);
-		if (party == null)
+			MobileParty party = ZombieSpawner.SpawnLadderTest(label, useZombieClan, templateId);
+			if (party == null)
+			{
+				return label + " FEHLGESCHLAGEN - Details im Engine-Log.";
+			}
+
+			float distance = party.Position.Distance(MobileParty.MainParty.Position);
+			return string.Format(
+				"OK {0}: '{1}', {2} Mann, {3:0} Einheiten entfernt.",
+				label, party.Name, party.MemberRoster.TotalManCount, distance);
+		}
+		catch (System.Exception exception)
 		{
-			return label + " FEHLGESCHLAGEN - Details im Engine-Log.";
+			ZombieLog.Error(label + " failed", exception);
+			return label + " fehlgeschlagen: " + exception.Message;
 		}
-
-		float distance = party.Position.Distance(MobileParty.MainParty.Position);
-		return string.Format(
-			"OK {0}: '{1}', {2} Mann, {3:0} Einheiten entfernt.",
-			label, party.Name, party.MemberRoster.TotalManCount, distance);
 	}
 
 	// Type 1/2 pick a specific named variant instead of a generic tier troop -
@@ -141,64 +165,72 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("spawn_zombies", "zombie")]
 	public static string SpawnZombies(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
-
-		if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
-		{
-			return "Format: zombie.spawn_zombies <anzahl> [tier 1-6 | 1=Legionaer 2=Kavallerie]";
-		}
-
-		string troopId;
-		string label;
-		if (strings.Count > 1 && strings[1] == "1")
-		{
-			troopId = LegionaryVariantId;
-			label = "Legionaer";
-		}
-		else if (strings.Count > 1 && strings[1] == "2")
-		{
-			troopId = CavalryVariantId;
-			label = "Kavallerie";
-		}
-		else
-		{
-			int tier = 1;
-			if (strings.Count > 1 && int.TryParse(strings[1], out int parsedTier))
+			if (Campaign.Current == null)
 			{
-				tier = parsedTier;
+				return "Keine laufende Kampagne.";
 			}
 
-			troopId = ZombieIds.TroopId(tier);
-			label = "Tier-" + tier;
-		}
+			if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
+			{
+				return "Format: zombie.spawn_zombies <anzahl> [tier 1-6 | 1=Legionaer 2=Kavallerie]";
+			}
 
-		CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(troopId);
-		if (troop == null)
+			string troopId;
+			string label;
+			if (strings.Count > 1 && strings[1] == "1")
+			{
+				troopId = LegionaryVariantId;
+				label = "Legionaer";
+			}
+			else if (strings.Count > 1 && strings[1] == "2")
+			{
+				troopId = CavalryVariantId;
+				label = "Kavallerie";
+			}
+			else
+			{
+				int tier = 1;
+				if (strings.Count > 1 && int.TryParse(strings[1], out int parsedTier))
+				{
+					tier = parsedTier;
+				}
+
+				troopId = ZombieIds.TroopId(tier);
+				label = "Tier-" + tier;
+			}
+
+			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(troopId);
+			if (troop == null)
+			{
+				return "Zombie-Truppe '" + troopId + "' nicht gefunden.";
+			}
+
+			MobileParty player = MobileParty.MainParty;
+			float sight = player.SeeingRange;
+			MobileParty party = ZombieSpawner.SpawnNearPosition(
+				player.Position,
+				sight * 0.8f,
+				sight * 0.4f,
+				new Dictionary<CharacterObject, int> { { troop, count } },
+				0);
+
+			if (party == null)
+			{
+				return "Spawn fehlgeschlagen - Details im Engine-Log.";
+			}
+
+			ZombieLog.Info("SUCCESS spawn_zombies: " + count + " x " + troop.StringId + " -> " + party.StringId);
+			return string.Format(
+				"OK spawn_zombies: {0} x {1}-Zombies gespawnt ({2:0} Einheiten entfernt).",
+				count, label, party.Position.Distance(player.Position));
+		}
+		catch (System.Exception exception)
 		{
-			return "Zombie-Truppe '" + troopId + "' nicht gefunden.";
+			ZombieLog.Error("spawn_zombies failed", exception);
+			return "spawn_zombies fehlgeschlagen: " + exception.Message;
 		}
-
-		MobileParty player = MobileParty.MainParty;
-		float sight = player.SeeingRange;
-		MobileParty party = ZombieSpawner.SpawnNearPosition(
-			player.Position,
-			sight * 0.8f,
-			sight * 0.4f,
-			new Dictionary<CharacterObject, int> { { troop, count } },
-			0);
-
-		if (party == null)
-		{
-			return "Spawn fehlgeschlagen - Details im Engine-Log.";
-		}
-
-		ZombieLog.Info("SUCCESS spawn_zombies: " + count + " x " + troop.StringId + " -> " + party.StringId);
-		return string.Format(
-			"OK spawn_zombies: {0} x {1}-Zombies gespawnt ({2:0} Einheiten entfernt).",
-			count, label, party.Position.Distance(player.Position));
 	}
 
 	/// <summary>
@@ -264,67 +296,76 @@ public static class ZombieCheats
 		hero = null;
 		error = null;
 
-		if (Campaign.Current == null)
+		try
 		{
-			error = "Keine laufende Kampagne.";
+			if (Campaign.Current == null)
+			{
+				error = "Keine laufende Kampagne.";
+				return null;
+			}
+
+			Clan zombieClan = ZombieClanUtil.GetZombieClan();
+			if (zombieClan == null)
+			{
+				error = "Zombie-Klan nicht verfuegbar.";
+				return null;
+			}
+
+			CharacterObject template = Hero.AllAliveHeroes.FirstOrDefault(h => h.IsLord)?.CharacterObject ?? Hero.MainHero.CharacterObject;
+			hero = HeroCreator.CreateSpecialHero(template, bornSettlement: null, faction: zombieClan, supporterOfClan: null, age: -1);
+			if (hero == null)
+			{
+				error = "Hero-Erstellung fehlgeschlagen.";
+				return null;
+			}
+
+			hero.Culture = zombieClan.Culture;
+			ZombieConversion.ApplyZombieAppearance(hero);
+
+			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(1));
+			if (troop == null)
+			{
+				error = "Zombie-Truppe nicht gefunden.";
+				return null;
+			}
+
+			MobileParty player = MobileParty.MainParty;
+			MobileParty party = ZombieSpawner.SpawnNearPosition(
+				player.Position,
+				player.SeeingRange * 0.8f,
+				player.SeeingRange * 0.4f,
+				new Dictionary<CharacterObject, int> { { troop, troopCount } },
+				0);
+
+			if (party == null)
+			{
+				error = "Spawn fehlgeschlagen - Details im Engine-Log.";
+				return null;
+			}
+
+			AddHeroToPartyAction.Apply(hero, party);
+
+			// BanditPartyComponent (what ZombieSpawner builds every horde on) never
+			// overrides PartyComponent.Leader - it is hardcoded to null there, so a
+			// hero merely sitting in the roster can never become LeaderHero. Using
+			// our own ZombiePartyComponent subclass instead of switching to
+			// LordPartyComponent keeps MobileParty.IsBandit true (it's a live `is
+			// BanditPartyComponent` check) while still giving the party a real
+			// LeaderHero - which is what unlocks sieging (BesiegerCamp reads
+			// LeaderHero directly).
+			ZombiePartyComponent.ConvertPartyToZombieLeaderParty(party, hero);
+
+			ZombieLog.Info("SUCCESS SpawnHeroLedParty: hero=" + hero.Name + " (" + hero.StringId + ") -> " + party.StringId
+				+ ", troops=" + party.MemberRoster.TotalManCount + ", LeaderHero=" + (party.LeaderHero?.Name.ToString() ?? "NULL"));
+
+			return party;
+		}
+		catch (System.Exception exception)
+		{
+			ZombieLog.Error("SpawnHeroLedParty failed", exception);
+			error = "Spawn fehlgeschlagen: " + exception.Message;
 			return null;
 		}
-
-		Clan zombieClan = ZombieClanUtil.GetZombieClan();
-		if (zombieClan == null)
-		{
-			error = "Zombie-Klan nicht verfuegbar.";
-			return null;
-		}
-
-		CharacterObject template = Hero.AllAliveHeroes.FirstOrDefault(h => h.IsLord)?.CharacterObject ?? Hero.MainHero.CharacterObject;
-		hero = HeroCreator.CreateSpecialHero(template, bornSettlement: null, faction: zombieClan, supporterOfClan: null, age: -1);
-		if (hero == null)
-		{
-			error = "Hero-Erstellung fehlgeschlagen.";
-			return null;
-		}
-
-		hero.Culture = zombieClan.Culture;
-		ZombieConversion.ApplyZombieAppearance(hero);
-
-		CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(1));
-		if (troop == null)
-		{
-			error = "Zombie-Truppe nicht gefunden.";
-			return null;
-		}
-
-		MobileParty player = MobileParty.MainParty;
-		MobileParty party = ZombieSpawner.SpawnNearPosition(
-			player.Position,
-			player.SeeingRange * 0.8f,
-			player.SeeingRange * 0.4f,
-			new Dictionary<CharacterObject, int> { { troop, troopCount } },
-			0);
-
-		if (party == null)
-		{
-			error = "Spawn fehlgeschlagen - Details im Engine-Log.";
-			return null;
-		}
-
-		AddHeroToPartyAction.Apply(hero, party);
-
-		// BanditPartyComponent (what ZombieSpawner builds every horde on) never
-		// overrides PartyComponent.Leader - it is hardcoded to null there, so a
-		// hero merely sitting in the roster can never become LeaderHero. Using
-		// our own ZombiePartyComponent subclass instead of switching to
-		// LordPartyComponent keeps MobileParty.IsBandit true (it's a live `is
-		// BanditPartyComponent` check) while still giving the party a real
-		// LeaderHero - which is what unlocks sieging (BesiegerCamp reads
-		// LeaderHero directly).
-		ZombiePartyComponent.ConvertPartyToZombieLeaderParty(party, hero);
-
-		ZombieLog.Info("SUCCESS SpawnHeroLedParty: hero=" + hero.Name + " (" + hero.StringId + ") -> " + party.StringId
-			+ ", troops=" + party.MemberRoster.TotalManCount + ", LeaderHero=" + (party.LeaderHero?.Name.ToString() ?? "NULL"));
-
-		return party;
 	}
 
 	/// <summary>
@@ -412,93 +453,125 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("list", "zombie")]
 	public static string List(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		List<MobileParty> parties = GetZombieParties();
-		if (parties.Count == 0)
+			List<MobileParty> parties = GetZombieParties();
+			if (parties.Count == 0)
+			{
+				return "Keine aktive Zombie-Party.";
+			}
+
+			StringBuilder builder = new();
+			foreach (MobileParty party in parties)
+			{
+				string line = string.Format(
+					"{0} | {1} Mann | ({2:0},{3:0}) | {4}",
+					party.Name, party.MemberRoster.TotalManCount, party.Position.X, party.Position.Y, party.GetBehaviorText());
+				builder.AppendLine(line);
+				ZombieLog.Info("  list: " + line);
+			}
+
+			ZombieLog.Info("SUCCESS list: " + parties.Count + " parties");
+			return builder.ToString();
+		}
+		catch (System.Exception exception)
 		{
-			return "Keine aktive Zombie-Party.";
+			ZombieLog.Error("list failed", exception);
+			return "list fehlgeschlagen: " + exception.Message;
 		}
-
-		StringBuilder builder = new();
-		foreach (MobileParty party in parties)
-		{
-			string line = string.Format(
-				"{0} | {1} Mann | ({2:0},{3:0}) | {4}",
-				party.Name, party.MemberRoster.TotalManCount, party.Position.X, party.Position.Y, party.GetBehaviorText());
-			builder.AppendLine(line);
-			ZombieLog.Info("  list: " + line);
-		}
-
-		ZombieLog.Info("SUCCESS list: " + parties.Count + " parties");
-		return builder.ToString();
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("grow", "zombie")]
 	public static string Grow(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
+			if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
+			{
+				return "Format: zombie.grow <anzahl> [tier 1-6]";
+			}
+
+			int tier = 1;
+			if (strings.Count > 1 && int.TryParse(strings[1], out int parsedTier))
+			{
+				tier = parsedTier;
+			}
+
+			MobileParty target = GetZombiePartyNearestToPlayer();
+			if (target == null)
+			{
+				return "Keine aktive Zombie-Party.";
+			}
+
+			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(tier));
+			if (troop == null)
+			{
+				return "Zombie-Truppe fuer Tier " + tier + " nicht gefunden.";
+			}
+
+			target.MemberRoster.AddToCounts(troop, count);
+			ZombieLog.Info("SUCCESS grow: +" + count + " x " + troop.StringId + " -> " + target.StringId
+				+ " (now " + target.MemberRoster.TotalManCount + ")");
+			return string.Format("{0}: +{1} x {2} (jetzt {3} Mann).",
+				target.Name, count, troop.StringId, target.MemberRoster.TotalManCount);
+		}
+		catch (System.Exception exception)
 		{
-			return "Format: zombie.grow <anzahl> [tier 1-6]";
+			ZombieLog.Error("grow failed", exception);
+			return "grow fehlgeschlagen: " + exception.Message;
 		}
-
-		int tier = 1;
-		if (strings.Count > 1 && int.TryParse(strings[1], out int parsedTier))
-		{
-			tier = parsedTier;
-		}
-
-		MobileParty target = GetZombiePartyNearestToPlayer();
-		if (target == null)
-		{
-			return "Keine aktive Zombie-Party.";
-		}
-
-		CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(tier));
-		if (troop == null)
-		{
-			return "Zombie-Truppe fuer Tier " + tier + " nicht gefunden.";
-		}
-
-		target.MemberRoster.AddToCounts(troop, count);
-		ZombieLog.Info("SUCCESS grow: +" + count + " x " + troop.StringId + " -> " + target.StringId
-			+ " (now " + target.MemberRoster.TotalManCount + ")");
-		return string.Format("{0}: +{1} x {2} (jetzt {3} Mann).",
-			target.Name, count, troop.StringId, target.MemberRoster.TotalManCount);
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("kill_all", "zombie")]
 	public static string KillAll(List<string> strings)
 	{
-		if (Campaign.Current == null)
+		try
 		{
-			return "Keine laufende Kampagne.";
-		}
+			if (Campaign.Current == null)
+			{
+				return "Keine laufende Kampagne.";
+			}
 
-		List<MobileParty> parties = GetZombieParties();
-		foreach (MobileParty party in parties)
+			List<MobileParty> parties = GetZombieParties();
+			foreach (MobileParty party in parties)
+			{
+				DestroyPartyAction.ApplyForDisbanding(party, party.HomeSettlement);
+			}
+
+			ZombieLog.Info("SUCCESS kill_all: removed " + parties.Count + " parties");
+			return parties.Count + " Zombie-Party(s) entfernt.";
+		}
+		catch (System.Exception exception)
 		{
-			DestroyPartyAction.ApplyForDisbanding(party, party.HomeSettlement);
+			ZombieLog.Error("kill_all failed", exception);
+			return "kill_all fehlgeschlagen: " + exception.Message;
 		}
-
-		ZombieLog.Info("SUCCESS kill_all: removed " + parties.Count + " parties");
-		return parties.Count + " Zombie-Party(s) entfernt.";
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("toggle_autospawn", "zombie")]
 	public static string ToggleAutoSpawn(List<string> strings)
 	{
-		ZombieIds.AutoSpawnOnNewGame = !ZombieIds.AutoSpawnOnNewGame;
-		ZombieLog.Info("SUCCESS toggle_autospawn -> " + ZombieIds.AutoSpawnOnNewGame);
-		return "Auto-Spawn bei Kampagnenstart: " + (ZombieIds.AutoSpawnOnNewGame ? "AN" : "AUS");
+		try
+		{
+			ZombieIds.AutoSpawnOnNewGame = !ZombieIds.AutoSpawnOnNewGame;
+			ZombieLog.Info("SUCCESS toggle_autospawn -> " + ZombieIds.AutoSpawnOnNewGame);
+			return "Auto-Spawn bei Kampagnenstart: " + (ZombieIds.AutoSpawnOnNewGame ? "AN" : "AUS");
+		}
+		catch (System.Exception exception)
+		{
+			ZombieLog.Error("toggle_autospawn failed", exception);
+			return "toggle_autospawn fehlgeschlagen: " + exception.Message;
+		}
 	}
 
 	/// <summary>
@@ -510,10 +583,18 @@ public static class ZombieCheats
 	[CommandLineFunctionality.CommandLineArgumentFunction("toggle_farsight", "zombie")]
 	public static string ToggleFarsight(List<string> strings)
 	{
-		ZombieIds.FarsightEnabled = !ZombieIds.FarsightEnabled;
-		ZombieLog.Info("SUCCESS toggle_farsight -> " + ZombieIds.FarsightEnabled);
-		return "Farsight (Sichtweite " + ZombieBehaviorConfig.FarsightSeeingRange.ToString("0") + "): "
-			+ (ZombieIds.FarsightEnabled ? "AN" : "AUS");
+		try
+		{
+			ZombieIds.FarsightEnabled = !ZombieIds.FarsightEnabled;
+			ZombieLog.Info("SUCCESS toggle_farsight -> " + ZombieIds.FarsightEnabled);
+			return "Farsight (Sichtweite " + ZombieBehaviorConfig.FarsightSeeingRange.ToString("0") + "): "
+				+ (ZombieIds.FarsightEnabled ? "AN" : "AUS");
+		}
+		catch (System.Exception exception)
+		{
+			ZombieLog.Error("toggle_farsight failed", exception);
+			return "toggle_farsight fehlgeschlagen: " + exception.Message;
+		}
 	}
 
 	private static List<MobileParty> GetZombieParties()

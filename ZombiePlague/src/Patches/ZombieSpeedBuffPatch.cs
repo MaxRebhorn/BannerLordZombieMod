@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -33,38 +34,45 @@ internal static class ZombieSpeedBuffPatch
 	[HarmonyPostfix]
 	private static void CalculateFinalSpeedPostfix(MobileParty mobileParty, ref ExplainedNumber __result)
 	{
-		if (!ZombieClanUtil.IsZombieParty(mobileParty))
+		try
 		{
-			return;
+			if (!ZombieClanUtil.IsZombieParty(mobileParty))
+			{
+				return;
+			}
+
+			__result.Add(ZombieBehaviorConfig.GeneralSpeedBonus, GeneralBuffText);
+
+			if (mobileParty.MemberRoster.TotalManCount < ZombieBehaviorConfig.YoungHordeMaxTroops)
+			{
+				__result.Add(ZombieBehaviorConfig.YoungHordeSpeedBonus, YoungHordeBuffText);
+			}
+
+			if (mobileParty.DefaultBehavior == AiBehavior.EngageParty && mobileParty.TargetParty != null)
+			{
+				__result.Add(ZombieBehaviorConfig.HuntingSpeedBonus, HuntingBuffText);
+			}
+
+			if (mobileParty.DefaultBehavior == AiBehavior.RaidSettlement)
+			{
+				// A genuine multiplier (not a flat add): +200% factor triples speed
+				// regardless of what the base value already is.
+				__result.AddFactor(ZombieBehaviorConfig.RaidApproachSpeedMultiplier - 1f, RaidApproachBuffText);
+			}
+
+			// Vanilla applies a flat -0.25 factor for night inside CalculateFinalSpeed
+			// itself (Campaign.Current.IsNight check, MovingAtNightEffect constant) -
+			// by the time this postfix runs it is already baked into __result's
+			// SumOfFactors, so adding the exact same magnitude back cancels it
+			// precisely regardless of what other factors are present.
+			if (ZombieBehaviorConfig.ZombieNightImmune && Campaign.Current.IsNight)
+			{
+				__result.AddFactor(0.25f, NightImmunityText);
+			}
 		}
-
-		__result.Add(ZombieBehaviorConfig.GeneralSpeedBonus, GeneralBuffText);
-
-		if (mobileParty.MemberRoster.TotalManCount < ZombieBehaviorConfig.YoungHordeMaxTroops)
+		catch (Exception ex)
 		{
-			__result.Add(ZombieBehaviorConfig.YoungHordeSpeedBonus, YoungHordeBuffText);
-		}
-
-		if (mobileParty.DefaultBehavior == AiBehavior.EngageParty && mobileParty.TargetParty != null)
-		{
-			__result.Add(ZombieBehaviorConfig.HuntingSpeedBonus, HuntingBuffText);
-		}
-
-		if (mobileParty.DefaultBehavior == AiBehavior.RaidSettlement)
-		{
-			// A genuine multiplier (not a flat add): +200% factor triples speed
-			// regardless of what the base value already is.
-			__result.AddFactor(ZombieBehaviorConfig.RaidApproachSpeedMultiplier - 1f, RaidApproachBuffText);
-		}
-
-		// Vanilla applies a flat -0.25 factor for night inside CalculateFinalSpeed
-		// itself (Campaign.Current.IsNight check, MovingAtNightEffect constant) -
-		// by the time this postfix runs it is already baked into __result's
-		// SumOfFactors, so adding the exact same magnitude back cancels it
-		// precisely regardless of what other factors are present.
-		if (ZombieBehaviorConfig.ZombieNightImmune && Campaign.Current.IsNight)
-		{
-			__result.AddFactor(0.25f, NightImmunityText);
+			ZombieLog.Error("ZombieSpeedBuffPatch.CalculateFinalSpeedPostfix failed", ex);
 		}
 	}
 
@@ -78,13 +86,21 @@ internal static class ZombieSpeedBuffPatch
 	[HarmonyPrefix]
 	private static bool GetWoundedModifierPrefix(MobileParty party, ref float __result)
 	{
-		if (!ZombieBehaviorConfig.ZombieWoundedSpeedImmune || !ZombieClanUtil.IsZombieParty(party))
+		try
 		{
+			if (!ZombieBehaviorConfig.ZombieWoundedSpeedImmune || !ZombieClanUtil.IsZombieParty(party))
+			{
+				return true;
+			}
+
+			__result = 0f;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieSpeedBuffPatch.GetWoundedModifierPrefix failed", ex);
 			return true;
 		}
-
-		__result = 0f;
-		return false;
 	}
 
 	private static readonly TextObject PartySizeImmunityText = new("{=zombieplague_partysize_speed}Doesn't need order or formation");
@@ -104,25 +120,32 @@ internal static class ZombieSpeedBuffPatch
 		int additionalTroopOnHorseCount,
 		ref ExplainedNumber __result)
 	{
-		if (!ZombieBehaviorConfig.ZombiePartySizeSpeedImmune || !ZombieClanUtil.IsZombieParty(mobileParty))
+		try
 		{
-			return;
-		}
+			if (!ZombieBehaviorConfig.ZombiePartySizeSpeedImmune || !ZombieClanUtil.IsZombieParty(mobileParty))
+			{
+				return;
+			}
 
-		int totalMenCount = mobileParty.MemberRoster.TotalManCount + additionalTroopOnFootCount + additionalTroopOnHorseCount;
-		int partySizeLimit = mobileParty.Party.PartySizeLimit;
-		foreach (MobileParty attachedParty in mobileParty.AttachedParties)
+			int totalMenCount = mobileParty.MemberRoster.TotalManCount + additionalTroopOnFootCount + additionalTroopOnHorseCount;
+			int partySizeLimit = mobileParty.Party.PartySizeLimit;
+			foreach (MobileParty attachedParty in mobileParty.AttachedParties)
+			{
+				totalMenCount += attachedParty.MemberRoster.TotalManCount;
+				partySizeLimit += attachedParty.Party.PartySizeLimit;
+			}
+
+			if (totalMenCount <= partySizeLimit || partySizeLimit <= 0)
+			{
+				return;
+			}
+
+			float overPartySizeEffect = 1f / ((float)totalMenCount / partySizeLimit) - 1f;
+			__result.AddFactor(-overPartySizeEffect, PartySizeImmunityText);
+		}
+		catch (Exception ex)
 		{
-			totalMenCount += attachedParty.MemberRoster.TotalManCount;
-			partySizeLimit += attachedParty.Party.PartySizeLimit;
+			ZombieLog.Error("ZombieSpeedBuffPatch.CalculateBaseSpeedPostfix failed", ex);
 		}
-
-		if (totalMenCount <= partySizeLimit || partySizeLimit <= 0)
-		{
-			return;
-		}
-
-		float overPartySizeEffect = 1f / ((float)totalMenCount / partySizeLimit) - 1f;
-		__result.AddFactor(-overPartySizeEffect, PartySizeImmunityText);
 	}
 }

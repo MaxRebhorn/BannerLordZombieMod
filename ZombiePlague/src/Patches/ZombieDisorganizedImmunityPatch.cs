@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Party;
@@ -18,12 +19,20 @@ internal static class ZombieDisorganizedImmunityPatch
 {
 	private static bool Prefix(PartyBase party, ref bool __result)
 	{
-		if (!ZombieBehaviorConfig.ZombieDisorganizedImmune || !ZombieClanUtil.IsZombieParty(party?.MobileParty))
+		try
 		{
+			if (!ZombieBehaviorConfig.ZombieDisorganizedImmune || !ZombieClanUtil.IsZombieParty(party?.MobileParty))
+			{
+				return true;
+			}
+
+			__result = false;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieDisorganizedImmunityPatch.Prefix failed", ex);
 			return true;
 		}
-
-		__result = false;
-		return false;
 	}
 }
