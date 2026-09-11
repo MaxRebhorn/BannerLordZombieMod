@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.ObjectSystem;
 using ZombiePlague.Infrastructure;
@@ -14,9 +15,26 @@ namespace ZombiePlague.Cheats;
 /// <summary>
 /// Developer console commands, reachable ingame with Alt+~ (same console as
 /// blse.version). Pattern follows vanilla CampaignCheats.
+///
+/// Every player-facing result string goes through TextObject with a
+/// "{=token}fallback text" id, same pattern the rest of the mod uses (see
+/// e.g. ZombieSpeedBuffPatch's buff texts) - the fallback is what's shown
+/// unless ModuleData/Languages/std_module_strings_xml.xml has a translated
+/// override for that token. The two read-only diagnostic dumps (Races,
+/// SkinPalette) are the deliberate exception: they print raw engine data
+/// tables, not a designed UI message, so localizing them would just be
+/// busywork with no real translation value.
 /// </summary>
 public static class ZombieCheats
 {
+	private static readonly TextObject NoCampaignText = new("{=zombieplague_cheat_no_campaign}Keine laufende Kampagne.");
+	private static readonly TextObject NoActivePartyText = new("{=zombieplague_cheat_no_active_party}Keine aktive Zombie-Party.");
+	private static readonly TextObject SpawnFailedEngineLogText = new("{=zombieplague_cheat_spawn_failed}Spawn fehlgeschlagen - Details im Engine-Log.");
+	private static readonly TextObject StateOnText = new("{=zombieplague_cheat_state_on}AN");
+	private static readonly TextObject StateOffText = new("{=zombieplague_cheat_state_off}AUS");
+
+	private static string OnOff(bool value) => (value ? StateOnText : StateOffText).ToString();
+
 	[CommandLineFunctionality.CommandLineArgumentFunction("spawn_near_player", "zombie")]
 	public static string SpawnNearPlayer(List<string> strings)
 	{
@@ -24,7 +42,7 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			int troopCount = 10;
@@ -36,18 +54,23 @@ public static class ZombieCheats
 			MobileParty party = ZombieSpawner.SpawnNearPlayer(troopCount);
 			if (party == null)
 			{
-				return "Spawn fehlgeschlagen - Details im Logfile (Configs/ModLogs/zombieplague_*.log).";
+				return new TextObject("{=zombieplague_cheat_spawn_near_player_log_fail}Spawn fehlgeschlagen - Details im Logfile (Configs/ModLogs/zombieplague_*.log).").ToString();
 			}
 
 			float distance = party.Position.Distance(MobileParty.MainParty.Position);
-			return string.Format(
-				"Zombie-Party '{0}' gespawnt: {1} Mann, {2:0} Einheiten entfernt (Sichtweite {3:0}).",
-				party.Name, party.MemberRoster.TotalManCount, distance, MobileParty.MainParty.SeeingRange);
+			TextObject result = new("{=zombieplague_cheat_spawn_near_player_result}Zombie-Party '{PARTY}' gespawnt: {COUNT} Mann, {DIST} Einheiten entfernt (Sichtweite {SIGHT}).");
+			result.SetTextVariable("PARTY", party.Name);
+			result.SetTextVariable("COUNT", party.MemberRoster.TotalManCount);
+			result.SetTextVariable("DIST", distance.ToString("0"));
+			result.SetTextVariable("SIGHT", MobileParty.MainParty.SeeingRange.ToString("0"));
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("spawn_near_player failed", exception);
-			return "spawn_near_player fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_spawn_near_player_error}spawn_near_player fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -105,7 +128,7 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			int looterCount = 10;
@@ -116,17 +139,20 @@ public static class ZombieCheats
 
 			if (!ZombieSpawner.SpawnBattleTest(looterCount))
 			{
-				return "t5_battle FEHLGESCHLAGEN - Details im Engine-Log.";
+				return new TextObject("{=zombieplague_cheat_t5_failed}t5_battle FEHLGESCHLAGEN - Details im Engine-Log.").ToString();
 			}
 
-			return string.Format(
-				"OK t5_battle: {0} Looter vs {1} Zombies nebeneinander gespawnt. Vor/nach dem Kampf 'zombie.list' aufrufen, um das Wachstum zu pruefen.",
-				looterCount, looterCount * 2);
+			TextObject result = new("{=zombieplague_cheat_t5_result}OK t5_battle: {LOOTERS} Looter vs {ZOMBIES} Zombies nebeneinander gespawnt. Vor/nach dem Kampf 'zombie.list' aufrufen, um das Wachstum zu pruefen.");
+			result.SetTextVariable("LOOTERS", looterCount);
+			result.SetTextVariable("ZOMBIES", looterCount * 2);
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("t5_battle failed", exception);
-			return "t5_battle fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_t5_error}t5_battle fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -136,24 +162,32 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			MobileParty party = ZombieSpawner.SpawnLadderTest(label, useZombieClan, templateId);
 			if (party == null)
 			{
-				return label + " FEHLGESCHLAGEN - Details im Engine-Log.";
+				TextObject failed = new("{=zombieplague_cheat_ladder_failed}{LABEL} FEHLGESCHLAGEN - Details im Engine-Log.");
+				failed.SetTextVariable("LABEL", label);
+				return failed.ToString();
 			}
 
 			float distance = party.Position.Distance(MobileParty.MainParty.Position);
-			return string.Format(
-				"OK {0}: '{1}', {2} Mann, {3:0} Einheiten entfernt.",
-				label, party.Name, party.MemberRoster.TotalManCount, distance);
+			TextObject result = new("{=zombieplague_cheat_ladder_result}OK {LABEL}: '{PARTY}', {COUNT} Mann, {DIST} Einheiten entfernt.");
+			result.SetTextVariable("LABEL", label);
+			result.SetTextVariable("PARTY", party.Name);
+			result.SetTextVariable("COUNT", party.MemberRoster.TotalManCount);
+			result.SetTextVariable("DIST", distance.ToString("0"));
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error(label + " failed", exception);
-			return label + " fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_ladder_error}{LABEL} fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("LABEL", label);
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -169,12 +203,12 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
 			{
-				return "Format: zombie.spawn_zombies <anzahl> [tier 1-6 | 1=Legionaer 2=Kavallerie]";
+				return new TextObject("{=zombieplague_cheat_spawn_zombies_format}Format: zombie.spawn_zombies <anzahl> [tier 1-6 | 1=Legionaer 2=Kavallerie]").ToString();
 			}
 
 			string troopId;
@@ -204,7 +238,9 @@ public static class ZombieCheats
 			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(troopId);
 			if (troop == null)
 			{
-				return "Zombie-Truppe '" + troopId + "' nicht gefunden.";
+				TextObject notFound = new("{=zombieplague_cheat_spawn_zombies_troop_not_found}Zombie-Truppe '{TROOP}' nicht gefunden.");
+				notFound.SetTextVariable("TROOP", troopId);
+				return notFound.ToString();
 			}
 
 			MobileParty player = MobileParty.MainParty;
@@ -218,18 +254,22 @@ public static class ZombieCheats
 
 			if (party == null)
 			{
-				return "Spawn fehlgeschlagen - Details im Engine-Log.";
+				return SpawnFailedEngineLogText.ToString();
 			}
 
 			ZombieLog.Info("SUCCESS spawn_zombies: " + count + " x " + troop.StringId + " -> " + party.StringId);
-			return string.Format(
-				"OK spawn_zombies: {0} x {1}-Zombies gespawnt ({2:0} Einheiten entfernt).",
-				count, label, party.Position.Distance(player.Position));
+			TextObject result = new("{=zombieplague_cheat_spawn_zombies_result}OK spawn_zombies: {COUNT} x {LABEL}-Zombies gespawnt ({DIST} Einheiten entfernt).");
+			result.SetTextVariable("COUNT", count);
+			result.SetTextVariable("LABEL", label);
+			result.SetTextVariable("DIST", party.Position.Distance(player.Position).ToString("0"));
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("spawn_zombies failed", exception);
-			return "spawn_zombies fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_spawn_zombies_error}spawn_zombies fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -252,9 +292,11 @@ public static class ZombieCheats
 			return error;
 		}
 
-		return string.Format(
-			"OK spawn_hero_horde: Held '{0}' (Anfuehrer) + 20 Zombies in Party '{1}' ({2:0} Einheiten entfernt).",
-			hero.Name, party.Name, party.Position.Distance(MobileParty.MainParty.Position));
+		TextObject result = new("{=zombieplague_cheat_spawn_hero_horde_result}OK spawn_hero_horde: Held '{HERO}' (Anfuehrer) + 20 Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt).");
+		result.SetTextVariable("HERO", hero.Name);
+		result.SetTextVariable("PARTY", party.Name);
+		result.SetTextVariable("DIST", party.Position.Distance(MobileParty.MainParty.Position).ToString("0"));
+		return result.ToString();
 	}
 
 	/// <summary>
@@ -279,9 +321,12 @@ public static class ZombieCheats
 			return error;
 		}
 
-		return string.Format(
-			"OK create_sieging_party: Held '{0}' (Anfuehrer) + {1} Zombies in Party '{2}' ({3:0} Einheiten entfernt).",
-			hero.Name, troopCount, party.Name, party.Position.Distance(MobileParty.MainParty.Position));
+		TextObject result = new("{=zombieplague_cheat_create_sieging_party_result}OK create_sieging_party: Held '{HERO}' (Anfuehrer) + {COUNT} Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt).");
+		result.SetTextVariable("HERO", hero.Name);
+		result.SetTextVariable("COUNT", troopCount);
+		result.SetTextVariable("PARTY", party.Name);
+		result.SetTextVariable("DIST", party.Position.Distance(MobileParty.MainParty.Position).ToString("0"));
+		return result.ToString();
 	}
 
 	/// <summary>
@@ -309,9 +354,12 @@ public static class ZombieCheats
 			return error;
 		}
 
-		return string.Format(
-			"OK create_op_sieging_party: Held '{0}' (Anfuehrer, alle Kampf-/Fuehrungsskills maximiert) + {1} Patient-Zero-Zombies in Party '{2}' ({3:0} Einheiten entfernt).",
-			hero.Name, troopCount, party.Name, party.Position.Distance(MobileParty.MainParty.Position));
+		TextObject result = new("{=zombieplague_cheat_create_op_sieging_party_result}OK create_op_sieging_party: Held '{HERO}' (Anfuehrer, alle Kampf-/Fuehrungsskills maximiert) + {COUNT} Patient-Zero-Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt).");
+		result.SetTextVariable("HERO", hero.Name);
+		result.SetTextVariable("COUNT", troopCount);
+		result.SetTextVariable("PARTY", party.Name);
+		result.SetTextVariable("DIST", party.Position.Distance(MobileParty.MainParty.Position).ToString("0"));
+		return result.ToString();
 	}
 
 	/// <summary>
@@ -354,14 +402,14 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				error = "Keine laufende Kampagne.";
+				error = NoCampaignText.ToString();
 				return null;
 			}
 
 			Clan zombieClan = ZombieClanUtil.GetZombieClan();
 			if (zombieClan == null)
 			{
-				error = "Zombie-Klan nicht verfuegbar.";
+				error = new TextObject("{=zombieplague_cheat_clan_unavailable}Zombie-Klan nicht verfuegbar.").ToString();
 				return null;
 			}
 
@@ -372,7 +420,7 @@ public static class ZombieCheats
 			hero = HeroCreator.CreateSpecialHero(template, bornSettlement: null, faction: zombieClan, supporterOfClan: null, age: -1);
 			if (hero == null)
 			{
-				error = "Hero-Erstellung fehlgeschlagen.";
+				error = new TextObject("{=zombieplague_cheat_hero_creation_failed}Hero-Erstellung fehlgeschlagen.").ToString();
 				return null;
 			}
 
@@ -390,7 +438,9 @@ public static class ZombieCheats
 			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(troopId);
 			if (troop == null)
 			{
-				error = "Zombie-Truppe nicht gefunden: " + troopId;
+				TextObject notFound = new("{=zombieplague_cheat_troop_not_found}Zombie-Truppe nicht gefunden: {TROOP}");
+				notFound.SetTextVariable("TROOP", troopId);
+				error = notFound.ToString();
 				return null;
 			}
 
@@ -404,7 +454,7 @@ public static class ZombieCheats
 
 			if (party == null)
 			{
-				error = "Spawn fehlgeschlagen - Details im Engine-Log.";
+				error = SpawnFailedEngineLogText.ToString();
 				return null;
 			}
 
@@ -429,7 +479,9 @@ public static class ZombieCheats
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("SpawnHeroLedParty failed", exception);
-			error = "Spawn fehlgeschlagen: " + exception.Message;
+			TextObject errorText = new("{=zombieplague_cheat_spawn_hero_error}Spawn fehlgeschlagen: {ERROR}");
+			errorText.SetTextVariable("ERROR", exception.Message);
+			error = errorText.ToString();
 			return null;
 		}
 	}
@@ -449,6 +501,7 @@ public static class ZombieCheats
 	/// Read-only probe: which races the engine registered, and the skin colour
 	/// palette behind each. Skin tone is an offset into that per-race gradient, not
 	/// a free RGB value - this is how to tell whether the zombie race came through.
+	/// Deliberately not localized - see the class doc comment.
 	/// </summary>
 	[CommandLineFunctionality.CommandLineArgumentFunction("races", "zombie")]
 	public static string Races(List<string> strings)
@@ -484,6 +537,7 @@ public static class ZombieCheats
 	/// Read-only probe: dumps the skin colour palette the engine offers for the
 	/// human race. Skin tone is an index into this gradient, not a free RGB value,
 	/// so this tells us whether anything green is reachable at all.
+	/// Deliberately not localized - see the class doc comment.
 	/// </summary>
 	[CommandLineFunctionality.CommandLineArgumentFunction("skin_palette", "zombie")]
 	public static string SkinPalette(List<string> strings)
@@ -523,21 +577,25 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			List<MobileParty> parties = GetZombieParties();
 			if (parties.Count == 0)
 			{
-				return "Keine aktive Zombie-Party.";
+				return NoActivePartyText.ToString();
 			}
 
 			StringBuilder builder = new();
 			foreach (MobileParty party in parties)
 			{
-				string line = string.Format(
-					"{0} | {1} Mann | ({2:0},{3:0}) | {4}",
-					party.Name, party.MemberRoster.TotalManCount, party.Position.X, party.Position.Y, party.GetBehaviorText());
+				TextObject lineText = new("{=zombieplague_cheat_list_line}{PARTY} | {COUNT} Mann | ({X},{Y}) | {BEHAVIOR}");
+				lineText.SetTextVariable("PARTY", party.Name);
+				lineText.SetTextVariable("COUNT", party.MemberRoster.TotalManCount);
+				lineText.SetTextVariable("X", party.Position.X.ToString("0"));
+				lineText.SetTextVariable("Y", party.Position.Y.ToString("0"));
+				lineText.SetTextVariable("BEHAVIOR", party.GetBehaviorText()?.ToString() ?? "unbekannt");
+				string line = lineText.ToString();
 				builder.AppendLine(line);
 				ZombieLog.Info("  list: " + line);
 			}
@@ -548,7 +606,9 @@ public static class ZombieCheats
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("list failed", exception);
-			return "list fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_list_error}list fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -559,12 +619,12 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			if (strings == null || strings.Count == 0 || !int.TryParse(strings[0], out int count) || count <= 0)
 			{
-				return "Format: zombie.grow <anzahl> [tier 1-6]";
+				return new TextObject("{=zombieplague_cheat_grow_format}Format: zombie.grow <anzahl> [tier 1-6]").ToString();
 			}
 
 			int tier = 1;
@@ -576,25 +636,33 @@ public static class ZombieCheats
 			MobileParty target = GetZombiePartyNearestToPlayer();
 			if (target == null)
 			{
-				return "Keine aktive Zombie-Party.";
+				return NoActivePartyText.ToString();
 			}
 
 			CharacterObject troop = MBObjectManager.Instance.GetObject<CharacterObject>(ZombieIds.TroopId(tier));
 			if (troop == null)
 			{
-				return "Zombie-Truppe fuer Tier " + tier + " nicht gefunden.";
+				TextObject notFound = new("{=zombieplague_cheat_grow_tier_not_found}Zombie-Truppe fuer Tier {TIER} nicht gefunden.");
+				notFound.SetTextVariable("TIER", tier);
+				return notFound.ToString();
 			}
 
 			target.MemberRoster.AddToCounts(troop, count);
 			ZombieLog.Info("SUCCESS grow: +" + count + " x " + troop.StringId + " -> " + target.StringId
 				+ " (now " + target.MemberRoster.TotalManCount + ")");
-			return string.Format("{0}: +{1} x {2} (jetzt {3} Mann).",
-				target.Name, count, troop.StringId, target.MemberRoster.TotalManCount);
+			TextObject result = new("{=zombieplague_cheat_grow_result}{PARTY}: +{COUNT} x {TROOP} (jetzt {TOTAL} Mann).");
+			result.SetTextVariable("PARTY", target.Name);
+			result.SetTextVariable("COUNT", count);
+			result.SetTextVariable("TROOP", troop.StringId);
+			result.SetTextVariable("TOTAL", target.MemberRoster.TotalManCount);
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("grow failed", exception);
-			return "grow fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_grow_error}grow fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -605,7 +673,7 @@ public static class ZombieCheats
 		{
 			if (Campaign.Current == null)
 			{
-				return "Keine laufende Kampagne.";
+				return NoCampaignText.ToString();
 			}
 
 			List<MobileParty> parties = GetZombieParties();
@@ -615,12 +683,16 @@ public static class ZombieCheats
 			}
 
 			ZombieLog.Info("SUCCESS kill_all: removed " + parties.Count + " parties");
-			return parties.Count + " Zombie-Party(s) entfernt.";
+			TextObject result = new("{=zombieplague_cheat_kill_all_result}{COUNT} Zombie-Party(s) entfernt.");
+			result.SetTextVariable("COUNT", parties.Count);
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("kill_all failed", exception);
-			return "kill_all fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_kill_all_error}kill_all fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -631,12 +703,16 @@ public static class ZombieCheats
 		{
 			ZombieIds.AutoSpawnOnNewGame = !ZombieIds.AutoSpawnOnNewGame;
 			ZombieLog.Info("SUCCESS toggle_autospawn -> " + ZombieIds.AutoSpawnOnNewGame);
-			return "Auto-Spawn bei Kampagnenstart: " + (ZombieIds.AutoSpawnOnNewGame ? "AN" : "AUS");
+			TextObject result = new("{=zombieplague_cheat_toggle_autospawn_result}Auto-Spawn bei Kampagnenstart: {STATE}");
+			result.SetTextVariable("STATE", OnOff(ZombieIds.AutoSpawnOnNewGame));
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("toggle_autospawn failed", exception);
-			return "toggle_autospawn fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_toggle_autospawn_error}toggle_autospawn fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 
@@ -653,13 +729,17 @@ public static class ZombieCheats
 		{
 			ZombieIds.FarsightEnabled = !ZombieIds.FarsightEnabled;
 			ZombieLog.Info("SUCCESS toggle_farsight -> " + ZombieIds.FarsightEnabled);
-			return "Farsight (Sichtweite " + ZombieBehaviorConfig.FarsightSeeingRange.ToString("0") + "): "
-				+ (ZombieIds.FarsightEnabled ? "AN" : "AUS");
+			TextObject result = new("{=zombieplague_cheat_toggle_farsight_result}Farsight (Sichtweite {RANGE}): {STATE}");
+			result.SetTextVariable("RANGE", ZombieBehaviorConfig.FarsightSeeingRange.ToString("0"));
+			result.SetTextVariable("STATE", OnOff(ZombieIds.FarsightEnabled));
+			return result.ToString();
 		}
 		catch (System.Exception exception)
 		{
 			ZombieLog.Error("toggle_farsight failed", exception);
-			return "toggle_farsight fehlgeschlagen: " + exception.Message;
+			TextObject error = new("{=zombieplague_cheat_toggle_farsight_error}toggle_farsight fehlgeschlagen: {ERROR}");
+			error.SetTextVariable("ERROR", exception.Message);
+			return error.ToString();
 		}
 	}
 

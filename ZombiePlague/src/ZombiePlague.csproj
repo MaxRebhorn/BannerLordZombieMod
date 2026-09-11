@@ -13,72 +13,45 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
+  <!--
+    Compile-time-only references via NuGet instead of HintPath into a local
+    Steam install. This is what makes the project buildable on any machine
+    (and in CI) without owning/installing Bannerlord: these packages are
+    metadata-only "reference assemblies" (or, for MCM, its own published
+    build), never copied into the output (ExcludeAssets="runtime", mirroring
+    the old <Private>false</Private>) - the actual DLLs the game loads at
+    runtime still come from the real Bannerlord install and the Steam
+    Workshop mods declared in SubModule.xml, exactly as before.
+
+    Bannerlord.ReferenceAssemblies.* versions are pinned to the exact game
+    build this mod targets (v1.4.8, matching SubModule.xml's
+    DependedModuleMetadata) - BUTR publishes one version per game build, so
+    there is no API-drift risk from picking a newer/older game version by
+    accident. Lib.Harmony/MCM/ButterLib/UIExtenderEx are independent
+    libraries (not tied to a game build), pinned to a recent stable release.
+  -->
   <ItemGroup>
-    <Reference Include="TaleWorlds.Core">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.Library">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Library.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.Localization">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Localization.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.ObjectSystem">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.MountAndBlade">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.MountAndBlade.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.CampaignSystem">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <!-- Now installed via Steam Workshop (content id 2859188632) rather than
-         a local Modules\Bannerlord.Harmony folder - see the MCM references
-         below for the same path shape. -->
-    <Reference Include="0Harmony">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\261550\2859188632\bin\Win64_Shipping_Client\0Harmony.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="SandBox">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.SaveSystem">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.SaveSystem.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.Engine">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.DotNet">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.DotNet.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <!-- MCM (Mod Configuration Menu) and its two dependencies - installed via
-         Steam Workshop, hence the different path shape from the TaleWorlds.*
-         references above. -->
-    <Reference Include="Bannerlord.UIExtenderEx">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bannerlord.ButterLib">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\261550\2859232415\bin\Win64_Shipping_Client\Bannerlord.ButterLib.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bannerlord.MBOptionScreen">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\261550\2859238197\bin\Win64_Shipping_Client\Bannerlord.MBOptionScreen.v1.5.1.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MCMv5">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\261550\2859238197\bin\Win64_Shipping_Client\MCMv5.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+    <PackageReference Include="Bannerlord.ReferenceAssemblies.Core" Version="1.4.8.119303" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Bannerlord.ReferenceAssemblies.SandBox" Version="1.4.8.119303" PrivateAssets="all" ExcludeAssets="runtime" />
+
+    <PackageReference Include="Lib.Harmony" Version="2.3.3" PrivateAssets="all" ExcludeAssets="runtime" />
+
+    <!--
+      Bannerlord.MCM (MCMv5.dll) is the only MCM assembly the code actually
+      uses (MCM.Abstractions.*/MCM.Common in ZombiePlagueSettings.cs) - the
+      previous separate Bannerlord.MBOptionScreen.dll HintPath (the old v2
+      API) was dead weight, no file referenced its namespace.
+    -->
+    <PackageReference Include="Bannerlord.MCM" Version="5.12.3" PrivateAssets="all" ExcludeAssets="runtime" />
+
+    <!--
+      Not referenced by any code (nothing uses Bannerlord.ButterLib.* or
+      Bannerlord.UIExtenderEx.* namespaces) - kept as compile references only
+      for parity with SubModule.xml's DependedModules, in case future code
+      needs them. Both are still required there for MCM's UI screen to load
+      at runtime regardless of this compile-time reference.
+    -->
+    <PackageReference Include="Bannerlord.ButterLib" Version="2.11.1" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Bannerlord.UIExtenderEx" Version="2.13.3" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>

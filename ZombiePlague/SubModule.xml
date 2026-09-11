@@ -19,10 +19,14 @@
     <DependedModule Id="Bannerlord.MBOptionScreen" />
   </DependedModules>
   <DependedModuleMetadatas>
-    <DependedModuleMetadata id="Native" order="LoadBeforeThis" version="v1.4.8.*" />
-    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.4.8.*" />
-    <DependedModuleMetadata id="Sandbox" order="LoadBeforeThis" version="v1.4.8.*" />
-    <DependedModuleMetadata id="StoryMode" order="LoadBeforeThis" version="v1.4.8.*" />
+    <!-- Wildcarded to the whole v1.4 line (not just v1.4.8) so a future
+         Bannerlord patch release doesn't silently break loading - bump to
+         the next minor (e.g. v1.5.*) only after actually testing against
+         it, since a minor bump can carry real API changes. -->
+    <DependedModuleMetadata id="Native" order="LoadBeforeThis" version="v1.4.*" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.4.*" />
+    <DependedModuleMetadata id="Sandbox" order="LoadBeforeThis" version="v1.4.*" />
+    <DependedModuleMetadata id="StoryMode" order="LoadBeforeThis" version="v1.4.*" />
     <DependedModuleMetadata id="Bannerlord.Harmony" order="LoadBeforeThis" />
     <!-- MCM (Mod Configuration Menu) and its own two dependencies - lets
          ZombiePlagueSettings.cs expose every ZombieBehaviorConfig value as

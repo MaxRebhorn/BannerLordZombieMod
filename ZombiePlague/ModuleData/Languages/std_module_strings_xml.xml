@@ -4,8 +4,87 @@
   <tags>
     <tag language="English" />
   </tags>
+  <!--
+    NOTE: despite the "English" tag above, most text values here are German -
+    they mirror the in-code TextObject fallback text verbatim (see
+    ZombieCheats.cs, ZombieSpeedBuffPatch.cs), which is what actually gets
+    shown since Bannerlord falls back to that inline text whenever no
+    matching-language entry exists. Pre-existing mismatch, not introduced by
+    this file's latest changes - a real localization pass would split this
+    into a German-tagged file and an actually-English one.
+  -->
   <strings>
     <string id="zombieplague_module_name" text="Zombie Plague" />
     <string id="zombieplague_session_ready" text="Zombie Plague campaign behavior is active." />
+
+    <!-- ZombieSpeedBuffPatch.cs buff texts -->
+    <string id="zombieplague_young_horde_speed" text="Young horde" />
+    <string id="zombieplague_hunting_speed" text="Chasing prey" />
+    <string id="zombieplague_general_speed" text="Zombie horde" />
+    <string id="zombieplague_night_speed" text="Doesn't need to see" />
+    <string id="zombieplague_raid_speed" text="Smells blood" />
+    <string id="zombieplague_partysize_speed" text="Doesn't need order or formation" />
+
+    <!-- ZombiePlagueCampaignBehavior.cs dialog -->
+    <string id="zombieplague_greeting" text="Uuuuuuuhhh..." />
+
+    <!-- ZombieCheats.cs: shared -->
+    <string id="zombieplague_cheat_no_campaign" text="Keine laufende Kampagne." />
+    <string id="zombieplague_cheat_no_active_party" text="Keine aktive Zombie-Party." />
+    <string id="zombieplague_cheat_spawn_failed" text="Spawn fehlgeschlagen - Details im Engine-Log." />
+    <string id="zombieplague_cheat_state_on" text="AN" />
+    <string id="zombieplague_cheat_state_off" text="AUS" />
+
+    <!-- ZombieCheats.cs: spawn_near_player -->
+    <string id="zombieplague_cheat_spawn_near_player_log_fail" text="Spawn fehlgeschlagen - Details im Logfile (Configs/ModLogs/zombieplague_*.log)." />
+    <string id="zombieplague_cheat_spawn_near_player_result" text="Zombie-Party '{PARTY}' gespawnt: {COUNT} Mann, {DIST} Einheiten entfernt (Sichtweite {SIGHT})." />
+    <string id="zombieplague_cheat_spawn_near_player_error" text="spawn_near_player fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: t0-t4/spawn_looter ladder -->
+    <string id="zombieplague_cheat_ladder_failed" text="{LABEL} FEHLGESCHLAGEN - Details im Engine-Log." />
+    <string id="zombieplague_cheat_ladder_result" text="OK {LABEL}: '{PARTY}', {COUNT} Mann, {DIST} Einheiten entfernt." />
+    <string id="zombieplague_cheat_ladder_error" text="{LABEL} fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: t5_battle -->
+    <string id="zombieplague_cheat_t5_failed" text="t5_battle FEHLGESCHLAGEN - Details im Engine-Log." />
+    <string id="zombieplague_cheat_t5_result" text="OK t5_battle: {LOOTERS} Looter vs {ZOMBIES} Zombies nebeneinander gespawnt. Vor/nach dem Kampf 'zombie.list' aufrufen, um das Wachstum zu pruefen." />
+    <string id="zombieplague_cheat_t5_error" text="t5_battle fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: spawn_zombies -->
+    <string id="zombieplague_cheat_spawn_zombies_format" text="Format: zombie.spawn_zombies &lt;anzahl&gt; [tier 1-6 | 1=Legionaer 2=Kavallerie]" />
+    <string id="zombieplague_cheat_spawn_zombies_troop_not_found" text="Zombie-Truppe '{TROOP}' nicht gefunden." />
+    <string id="zombieplague_cheat_spawn_zombies_result" text="OK spawn_zombies: {COUNT} x {LABEL}-Zombies gespawnt ({DIST} Einheiten entfernt)." />
+    <string id="zombieplague_cheat_spawn_zombies_error" text="spawn_zombies fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: spawn_hero_horde / create_sieging_party / create_op_sieging_party -->
+    <string id="zombieplague_cheat_clan_unavailable" text="Zombie-Klan nicht verfuegbar." />
+    <string id="zombieplague_cheat_hero_creation_failed" text="Hero-Erstellung fehlgeschlagen." />
+    <string id="zombieplague_cheat_troop_not_found" text="Zombie-Truppe nicht gefunden: {TROOP}" />
+    <string id="zombieplague_cheat_spawn_hero_error" text="Spawn fehlgeschlagen: {ERROR}" />
+    <string id="zombieplague_cheat_spawn_hero_horde_result" text="OK spawn_hero_horde: Held '{HERO}' (Anfuehrer) + 20 Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt)." />
+    <string id="zombieplague_cheat_create_sieging_party_result" text="OK create_sieging_party: Held '{HERO}' (Anfuehrer) + {COUNT} Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt)." />
+    <string id="zombieplague_cheat_create_op_sieging_party_result" text="OK create_op_sieging_party: Held '{HERO}' (Anfuehrer, alle Kampf-/Fuehrungsskills maximiert) + {COUNT} Patient-Zero-Zombies in Party '{PARTY}' ({DIST} Einheiten entfernt)." />
+
+    <!-- ZombieCheats.cs: list -->
+    <string id="zombieplague_cheat_list_line" text="{PARTY} | {COUNT} Mann | ({X},{Y}) | {BEHAVIOR}" />
+    <string id="zombieplague_cheat_list_error" text="list fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: grow -->
+    <string id="zombieplague_cheat_grow_format" text="Format: zombie.grow &lt;anzahl&gt; [tier 1-6]" />
+    <string id="zombieplague_cheat_grow_tier_not_found" text="Zombie-Truppe fuer Tier {TIER} nicht gefunden." />
+    <string id="zombieplague_cheat_grow_result" text="{PARTY}: +{COUNT} x {TROOP} (jetzt {TOTAL} Mann)." />
+    <string id="zombieplague_cheat_grow_error" text="grow fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: kill_all -->
+    <string id="zombieplague_cheat_kill_all_result" text="{COUNT} Zombie-Party(s) entfernt." />
+    <string id="zombieplague_cheat_kill_all_error" text="kill_all fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: toggle_autospawn -->
+    <string id="zombieplague_cheat_toggle_autospawn_result" text="Auto-Spawn bei Kampagnenstart: {STATE}" />
+    <string id="zombieplague_cheat_toggle_autospawn_error" text="toggle_autospawn fehlgeschlagen: {ERROR}" />
+
+    <!-- ZombieCheats.cs: toggle_farsight -->
+    <string id="zombieplague_cheat_toggle_farsight_result" text="Farsight (Sichtweite {RANGE}): {STATE}" />
+    <string id="zombieplague_cheat_toggle_farsight_error" text="toggle_farsight fehlgeschlagen: {ERROR}" />
   </strings>
 </base>

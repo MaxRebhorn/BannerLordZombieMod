@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore ZombiePlague/src/ZombiePlague.csproj
+
+      - name: Build
+        run: dotnet build ZombiePlague/src/ZombiePlague.csproj -c Release --no-restore
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZombiePlague.dll
+          path: ZombiePlague/bin/Win64_Shipping_Client/ZombiePlague.dll
+          if-no-files-found: error
