@@ -319,7 +319,11 @@ public sealed class ZombiePlagueSettings : AttributeGlobalSettings<ZombiePlagueS
 	public bool SiegeDisabledPendingInvestigation
 	{
 		get => ZombieBehaviorConfig.SiegeDisabledPendingInvestigation;
-		set => ZombieBehaviorConfig.SiegeDisabledPendingInvestigation = value;
+		set
+		{
+			ZombieBehaviorConfig.SiegeDisabledPendingInvestigation = value;
+			ZombieLog.Info("MCM: Siege Disabled (Safety Toggle) set to " + value);
+		}
 	}
 
 	[SettingPropertyInteger("High Quality Tier Minimum", 1, 6, Order = 55, RequireRestart = false, HintText = "Troop tier considered 'high quality' for the high-quality raid threshold above.")]
@@ -610,5 +614,13 @@ public sealed class ZombiePlagueSettings : AttributeGlobalSettings<ZombiePlagueS
 	{
 		get => ZombieBehaviorConfig.AmbientSoundIntervalSeconds;
 		set => ZombieBehaviorConfig.AmbientSoundIntervalSeconds = value;
+	}
+
+	[SettingPropertyBool("Debug Chat Messages", Order = 3, RequireRestart = false, HintText = "Also show warnings/errors from the mod's internal log as in-game chat messages, not just in the log file. Useful for spotting a caught exception without opening the log.")]
+	[SettingPropertyGroup("Debug", GroupOrder = 5)]
+	public bool DebugChatMessagesEnabled
+	{
+		get => ZombieBehaviorConfig.DebugChatMessagesEnabled;
+		set => ZombieBehaviorConfig.DebugChatMessagesEnabled = value;
 	}
 }

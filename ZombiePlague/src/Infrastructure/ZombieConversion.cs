@@ -121,17 +121,28 @@ internal static class ZombieConversion
 			return;
 		}
 
-		BodyProperties randomBodyProperties = FaceGen.GetRandomBodyProperties(
-			raceIndex,
-			hero.IsFemale,
-			bodyPropertyRange.BodyPropertyMin,
-			bodyPropertyRange.BodyPropertyMax,
-			0,
-			MBRandom.RandomInt(int.MaxValue),
-			bodyPropertyRange.HairTags,
-			bodyPropertyRange.BeardTags,
-			bodyPropertyRange.TattooTags,
-			0f);
+		BodyProperties randomBodyProperties;
+		try
+		{
+			randomBodyProperties = FaceGen.GetRandomBodyProperties(
+				raceIndex,
+				hero.IsFemale,
+				bodyPropertyRange.BodyPropertyMin,
+				bodyPropertyRange.BodyPropertyMax,
+				0,
+				MBRandom.RandomInt(int.MaxValue),
+				bodyPropertyRange.HairTags,
+				bodyPropertyRange.BeardTags,
+				bodyPropertyRange.TattooTags,
+				0f);
+		}
+		catch (Exception ex)
+		{
+			// Native call - a bad/incomplete body property template must not
+			// take down the whole hero-conversion or save-load path calling this.
+			ZombieLog.Error("ApplyZombieAppearance: FaceGen.GetRandomBodyProperties failed for " + hero.Name, ex);
+			return;
+		}
 
 		hero.StaticBodyProperties = randomBodyProperties.StaticProperties;
 

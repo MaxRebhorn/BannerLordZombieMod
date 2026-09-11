@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
@@ -40,15 +41,22 @@ internal static class SiegeEndPositionGuardPatch
 	[HarmonyPrefix]
 	private static void Prefix(MobileParty __instance, BesiegerCamp value)
 	{
-		if (value != null || !ZombieClanUtil.IsZombieParty(__instance))
+		try
 		{
-			return;
-		}
+			if (value != null || !ZombieClanUtil.IsZombieParty(__instance))
+			{
+				return;
+			}
 
-		Settlement settlement = __instance.BesiegedSettlement;
-		if (settlement != null)
+			Settlement settlement = __instance.BesiegedSettlement;
+			if (settlement != null)
+			{
+				PendingLeftSettlement[__instance] = settlement;
+			}
+		}
+		catch (Exception ex)
 		{
-			PendingLeftSettlement[__instance] = settlement;
+			ZombieLog.Error("SiegeEndPositionGuardPatch.Prefix failed", ex);
 		}
 	}
 
@@ -60,10 +68,19 @@ internal static class SiegeEndPositionGuardPatch
 			return;
 		}
 
+		// Removed up front, before the risky work below - so a failure here
+		// never leaves a stale entry (leak) for this party.
 		PendingLeftSettlement.Remove(__instance);
 
-		ZombieLog.Info("SiegeEndPositionGuard: " + __instance.StringId + " left the siege of " + settlement.StringId
-			+ " - forcing position to GatePosition before native siege-camp cleanup continues.");
-		__instance.Position = settlement.GatePosition;
+		try
+		{
+			ZombieLog.Info("SiegeEndPositionGuard: " + __instance.StringId + " left the siege of " + settlement.StringId
+				+ " - forcing position to GatePosition before native siege-camp cleanup continues.");
+			__instance.Position = settlement.GatePosition;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("SiegeEndPositionGuardPatch.Postfix failed for " + __instance.StringId, ex);
+		}
 	}
 }

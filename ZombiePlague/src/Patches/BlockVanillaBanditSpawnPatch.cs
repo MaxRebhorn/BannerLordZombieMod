@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -21,7 +22,15 @@ internal static class BlockVanillaLooterSpawnPatch
 {
 	private static bool Prefix(Clan selectedFaction)
 	{
-		return !ZombieClanUtil.IsZombieClan(selectedFaction);
+		try
+		{
+			return !ZombieClanUtil.IsZombieClan(selectedFaction);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("BlockVanillaLooterSpawnPatch.Prefix failed", ex);
+			return true;
+		}
 	}
 }
 
@@ -30,6 +39,14 @@ internal static class BlockVanillaBanditSpawnPatch
 {
 	private static bool Prefix(Clan selectedFaction)
 	{
-		return !ZombieClanUtil.IsZombieClan(selectedFaction);
+		try
+		{
+			return !ZombieClanUtil.IsZombieClan(selectedFaction);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("BlockVanillaBanditSpawnPatch.Prefix failed", ex);
+			return true;
+		}
 	}
 }

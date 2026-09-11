@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Party;
@@ -19,25 +20,41 @@ internal static class ZombieUpkeepImmunityPatch
 	[HarmonyPrefix]
 	private static bool GetDailyStarvationMoralePenaltyPrefix(PartyBase party, ref int __result)
 	{
-		if (!ZombieBehaviorConfig.ZombieHungerWageMoraleImmune || !ZombieClanUtil.IsZombieParty(party?.MobileParty))
+		try
 		{
+			if (!ZombieBehaviorConfig.ZombieHungerWageMoraleImmune || !ZombieClanUtil.IsZombieParty(party?.MobileParty))
+			{
+				return true;
+			}
+
+			__result = 0;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieUpkeepImmunityPatch.GetDailyStarvationMoralePenaltyPrefix failed", ex);
 			return true;
 		}
-
-		__result = 0;
-		return false;
 	}
 
 	[HarmonyPatch(nameof(DefaultPartyMoraleModel.GetDailyNoWageMoralePenalty))]
 	[HarmonyPrefix]
 	private static bool GetDailyNoWageMoralePenaltyPrefix(MobileParty party, ref int __result)
 	{
-		if (!ZombieBehaviorConfig.ZombieHungerWageMoraleImmune || !ZombieClanUtil.IsZombieParty(party))
+		try
 		{
+			if (!ZombieBehaviorConfig.ZombieHungerWageMoraleImmune || !ZombieClanUtil.IsZombieParty(party))
+			{
+				return true;
+			}
+
+			__result = 0;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieUpkeepImmunityPatch.GetDailyNoWageMoralePenaltyPrefix failed", ex);
 			return true;
 		}
-
-		__result = 0;
-		return false;
 	}
 }

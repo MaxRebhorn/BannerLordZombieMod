@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
@@ -40,26 +41,42 @@ internal static class ZombieNoRoutPatch
 	[HarmonyPrefix]
 	private static bool RoutePrefix(MapEventSide __instance)
 	{
-		bool isZombieSide = __instance.Parties.Any(party => party.Party.IsMobile && ZombieClanUtil.IsZombieParty(party.Party.MobileParty));
-		if (!isZombieSide)
+		try
 		{
+			bool isZombieSide = __instance.Parties.Any(party => party.Party.IsMobile && ZombieClanUtil.IsZombieParty(party.Party.MobileParty));
+			if (!isZombieSide)
+			{
+				return true;
+			}
+
+			ZombieLog.Info("ZombieNoRoutPatch: skipped Route() for a zombie-clan side - zombies do not flee.");
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieNoRoutPatch.RoutePrefix failed", ex);
 			return true;
 		}
-
-		ZombieLog.Info("ZombieNoRoutPatch: skipped Route() for a zombie-clan side - zombies do not flee.");
-		return false;
 	}
 
 	[HarmonyPatch(typeof(DefaultBattleRewardModel), nameof(DefaultBattleRewardModel.CanTroopBeTakenPrisoner))]
 	[HarmonyPrefix]
 	private static bool CanTroopBeTakenPrisonerPrefix(CharacterObject troop, ref bool __result)
 	{
-		if (!ZombieClanUtil.IsZombieTroop(troop))
+		try
 		{
+			if (!ZombieClanUtil.IsZombieTroop(troop))
+			{
+				return true;
+			}
+
+			__result = false;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("ZombieNoRoutPatch.CanTroopBeTakenPrisonerPrefix failed", ex);
 			return true;
 		}
-
-		__result = false;
-		return false;
 	}
 }

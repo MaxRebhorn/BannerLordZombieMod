@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -39,16 +40,24 @@ internal static class SiegeCampPositionGuardPatch
 {
 	private static bool Prefix(MobileParty mobileParty, MatrixFrame[] siegeCamp1GlobalFrames, ref CampaignVec2 __result)
 	{
-		if (siegeCamp1GlobalFrames != null && siegeCamp1GlobalFrames.Length > 0)
+		try
 		{
+			if (siegeCamp1GlobalFrames != null && siegeCamp1GlobalFrames.Length > 0)
+			{
+				return true;
+			}
+
+			ZombieLog.Error("GetSiegeCampPartyPosition: " + (mobileParty?.StringId ?? "NULL")
+				+ " -> target settlement has no primary siege camp scene positions (BesiegerCampPositions1 empty/null) - "
+				+ "using GatePosition instead of letting vanilla index the empty array.");
+
+			__result = CampaignVec2.Invalid;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("SiegeCampPositionGuardPatch.Prefix failed", ex);
 			return true;
 		}
-
-		ZombieLog.Error("GetSiegeCampPartyPosition: " + mobileParty.StringId
-			+ " -> target settlement has no primary siege camp scene positions (BesiegerCampPositions1 empty/null) - "
-			+ "using GatePosition instead of letting vanilla index the empty array.");
-
-		__result = CampaignVec2.Invalid;
-		return false;
 	}
 }

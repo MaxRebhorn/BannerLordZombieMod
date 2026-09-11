@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace ZombiePlague.Infrastructure;
@@ -26,15 +27,20 @@ internal static class ZombieLog
 
 	public static void Info(string message)
 	{
-		Write("INFO ", message);
+		Write("INFO ", message, notifyChat: false);
+	}
+
+	public static void Warn(string message)
+	{
+		Write("WARN ", message, notifyChat: true);
 	}
 
 	public static void Error(string message, Exception exception = null)
 	{
-		Write("ERROR", exception == null ? message : message + " :: " + exception);
+		Write("ERROR", exception == null ? message : message + " :: " + exception, notifyChat: true);
 	}
 
-	private static void Write(string level, string message)
+	private static void Write(string level, string message, bool notifyChat)
 	{
 		string line = Prefix + level + " " + message;
 
@@ -48,6 +54,34 @@ internal static class ZombieLog
 		}
 
 		WriteToFile(line);
+
+		if (notifyChat)
+		{
+			NotifyChat(level, message);
+		}
+	}
+
+	private static void NotifyChat(string level, string message)
+	{
+		if (!ZombieBehaviorConfig.DebugChatMessagesEnabled)
+		{
+			return;
+		}
+
+		try
+		{
+			if (Game.Current == null)
+			{
+				return;
+			}
+
+			Color color = level == "ERROR" ? Colors.Red : Colors.Yellow;
+			InformationManager.DisplayMessage(new InformationMessage(Prefix + level + ": " + message, color));
+		}
+		catch
+		{
+			// A broken notification must never take the game down either.
+		}
 	}
 
 	private static void WriteToFile(string line)

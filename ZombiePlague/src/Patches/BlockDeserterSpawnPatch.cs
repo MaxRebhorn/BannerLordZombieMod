@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -21,7 +22,15 @@ internal static class BlockDeserterSpawnPatch
 {
 	private static bool Prefix(MapEvent mapEvent)
 	{
-		return !InvolvesZombies(mapEvent);
+		try
+		{
+			return !InvolvesZombies(mapEvent);
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("BlockDeserterSpawnPatch.Prefix failed", ex);
+			return true;
+		}
 	}
 
 	private static bool InvolvesZombies(MapEvent mapEvent)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
@@ -401,13 +402,27 @@ internal static class ZombieSpawner
 		}
 
 		ZombieLog.Info("  calling CreateLooterParty (home=" + homeSettlement.StringId + ")...");
-		MobileParty party = BanditPartyComponent.CreateLooterParty(
-			ZombieIds.PartyIdPrefix,
-			clan,
-			homeSettlement,
-			isBossParty: false,
-			template,
-			position);
+		MobileParty party;
+		try
+		{
+			party = BanditPartyComponent.CreateLooterParty(
+				ZombieIds.PartyIdPrefix,
+				clan,
+				homeSettlement,
+				isBossParty: false,
+				template,
+				position);
+		}
+		catch (Exception ex)
+		{
+			// The known native-crash trigger this class works around (see class
+			// doc comment) - a bad position/template combo can still slip
+			// through despite the checks above, so this is the last line of
+			// defense before the actual creation call.
+			ZombieLog.Error("  CreateLooterParty failed - aborting spawn", ex);
+			return null;
+		}
+
 		ZombieLog.Info("  party created: " + party.StringId + ", starter roster=" + party.MemberRoster.TotalManCount);
 
 		ApplyRequestedComposition(party, troops, fallbackTroopCount);

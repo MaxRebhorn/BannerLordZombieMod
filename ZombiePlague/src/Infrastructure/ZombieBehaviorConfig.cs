@@ -305,6 +305,11 @@ internal static class ZombieBehaviorConfig
 	// this just needs to be long enough not to sound like machine-gun grunting.
 	public static float AmbientSoundIntervalSeconds = 12f;
 
+	// When enabled, ZombieLog.Warn/Error also post an in-game chat message
+	// (see ZombieLog) instead of only writing to the engine/file log - lets a
+	// player surface a caught exception without digging through log files.
+	public static bool DebugChatMessagesEnabled = false;
+
 	// --- Stuck-party watchdog (bug prevention) ---
 	// If a party moves less than this many map units within an hourly tick it
 	// counts as stationary. After StuckThresholdHours of that in a row it is
@@ -372,6 +377,7 @@ internal static class ZombieBehaviorConfig
 	public static void ApplyDifficultyPreset(int index)
 	{
 		DifficultyPresetIndex = index;
+		ZombieLog.Info("ApplyDifficultyPreset: preset index " + index + " (" + (index switch { 0 => "Easy", 2 => "Hard", _ => "Medium" }) + ")");
 		switch (index)
 		{
 			case 0: // Easy

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -47,6 +48,23 @@ internal static class SiegeRelationChangeGuardPatch
 		MethodInfo original = AccessTools.Method(typeof(ChangeRelationAction), nameof(ChangeRelationAction.ApplyRelationChangeBetweenHeroes));
 		MethodInfo replacement = AccessTools.Method(typeof(SiegeRelationChangeGuardPatch), nameof(GuardedApplyRelationChangeBetweenHeroes));
 
+		if (original == null || replacement == null)
+		{
+			// A game update renamed/removed one of these signatures - the guard
+			// can no longer find its target call and silently stops applying.
+			// Log loudly so this doesn't look like the crash was just fixed.
+			ZombieLog.Error("SiegeRelationChangeGuardPatch: method resolve failed (original="
+				+ (original == null ? "NULL" : "ok") + ", replacement=" + (replacement == null ? "NULL" : "ok")
+				+ ") - guard is INACTIVE, crash workaround no longer applies.");
+
+			foreach (CodeInstruction instruction in instructions)
+			{
+				yield return instruction;
+			}
+
+			yield break;
+		}
+
 		foreach (CodeInstruction instruction in instructions)
 		{
 			if (instruction.Calls(original))
@@ -62,15 +80,22 @@ internal static class SiegeRelationChangeGuardPatch
 
 	private static void GuardedApplyRelationChangeBetweenHeroes(Hero hero, Hero gainedRelationWith, int relationChange, bool showQuickNotification)
 	{
-		bool involvesZombie = ZombieClanUtil.IsZombieClan(hero?.Clan) || ZombieClanUtil.IsZombieClan(gainedRelationWith?.Clan);
-		if (!involvesZombie)
+		try
 		{
-			ChangeRelationAction.ApplyRelationChangeBetweenHeroes(hero, gainedRelationWith, relationChange, showQuickNotification);
-			return;
-		}
+			bool involvesZombie = ZombieClanUtil.IsZombieClan(hero?.Clan) || ZombieClanUtil.IsZombieClan(gainedRelationWith?.Clan);
+			if (!involvesZombie)
+			{
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(hero, gainedRelationWith, relationChange, showQuickNotification);
+				return;
+			}
 
-		ZombieLog.Info("SiegeRelationChangeGuard: skipped relation change between "
-			+ (hero?.Name.ToString() ?? "NULL") + " and " + (gainedRelationWith?.Name.ToString() ?? "NULL")
-			+ " - a zombie hero is involved (confirmed crash site, see SiegeDiagnosticsPatch's log trail).");
+			ZombieLog.Info("SiegeRelationChangeGuard: skipped relation change between "
+				+ (hero?.Name.ToString() ?? "NULL") + " and " + (gainedRelationWith?.Name.ToString() ?? "NULL")
+				+ " - a zombie hero is involved (confirmed crash site).");
+		}
+		catch (Exception ex)
+		{
+			ZombieLog.Error("SiegeRelationChangeGuardPatch.GuardedApplyRelationChangeBetweenHeroes failed", ex);
+		}
 	}
 }
