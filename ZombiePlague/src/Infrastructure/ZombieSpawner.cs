@@ -551,6 +551,16 @@ internal static class ZombieSpawner
 	/// wandering/split-off party away from a settlement or its parent, instead of
 	/// FindWanderPoint's undirected random ring. Validated the same way and for
 	/// the same reason as FindWanderPoint above.
+	///
+	/// A single narrow search (distance * 0.25 around the "away" target) used to
+	/// give up immediately and fall back to `origin` - a no-op move. Near a
+	/// coastline/map edge that target point can be permanently unreachable (in
+	/// water, off-navmesh), so the party got stuck recomputing the exact same
+	/// failing search every AI tick forever, flooding the log without ever
+	/// actually fleeing/wandering. Now widens the search around the same target
+	/// before trying a wide search around `origin` itself (almost always
+	/// reachable, since the party is already standing there) - only falling
+	/// back to the no-op `origin` return if every attempt fails.
 	/// </summary>
 	public static CampaignVec2 FindPointAwayFrom(CampaignVec2 origin, CampaignVec2 subjectToAvoid, float distance)
 	{
@@ -567,9 +577,21 @@ internal static class ZombieSpawner
 
 		if (!point.IsValid())
 		{
+			point = NavigationHelper.FindReachablePointAroundPosition(
+				target, MobileParty.NavigationType.Default, distance, 0f);
+		}
+
+		if (!point.IsValid())
+		{
+			point = NavigationHelper.FindReachablePointAroundPosition(
+				origin, MobileParty.NavigationType.Default, distance, 0f);
+		}
+
+		if (!point.IsValid())
+		{
 			ZombieLog.Error(string.Format(
-				"FindPointAwayFrom: navmesh search around ({0:0.0},{1:0.0}) returned an invalid point - falling back to origin",
-				target.X, target.Y));
+				"FindPointAwayFrom: navmesh search around ({0:0.0},{1:0.0}) and around origin ({2:0.0},{3:0.0}) both returned an invalid point - falling back to origin",
+				target.X, target.Y, origin.X, origin.Y));
 			return origin;
 		}
 

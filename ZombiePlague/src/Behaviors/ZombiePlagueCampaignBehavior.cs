@@ -370,14 +370,21 @@ public sealed class ZombiePlagueCampaignBehavior : CampaignBehaviorBase
 	/// </summary>
 	private bool CheckAndHandleStuckParty(MobileParty party)
 	{
-		// A besieging party is *supposed* to sit at its camp position for as
-		// long as the siege lasts - real sieges run well past
+		// A besieging or actively-raiding party is *supposed* to sit still for
+		// as long as that action takes - real sieges/raids run well past
 		// StuckThresholdHours, and without this exemption the watchdog was
-		// force-escaping every siege that outlasted 10 hours, indistinguishable
-		// from an actual navmesh-stuck party. Keep the counter zeroed the whole
-		// time so leaving the siege later doesn't immediately look "stuck" from
-		// hours banked while it was deliberately stationary.
-		if (party.BesiegedSettlement != null)
+		// force-escaping every one of them that outlasted 10 hours,
+		// indistinguishable from an actual navmesh-stuck party. Confirmed in
+		// practice: a 3000-troop horde mid-raid got yanked away by
+		// SetMoveGoToPoint the moment its 10h banked, vanishing from the
+		// village it was raiding and immediately followed by a crash -
+		// interrupting vanilla's raid/siege state machine mid-transaction is
+		// the same class of bug as the siege-end position crash fixed earlier
+		// (see SiegeEndPositionGuardPatch). Keep the counter zeroed the whole
+		// time so resuming normal movement afterwards doesn't immediately look
+		// "stuck" from hours banked while it was deliberately stationary.
+		if (party.BesiegedSettlement != null
+			|| (party.TargetSettlement != null && party.DefaultBehavior == AiBehavior.RaidSettlement))
 		{
 			_stuckHours[party] = 0f;
 			_lastPosition[party] = party.Position;

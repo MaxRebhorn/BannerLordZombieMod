@@ -265,10 +265,15 @@ internal static class ZombieBehaviorConfig
 	}
 
 	// --- Feature 4: splitting ---
-	// Soft split threshold band: no split below 500, guaranteed (100% daily
-	// chance) at 600+, linear chance in between.
-	public static int SplitMinTroops = 500;
-	public static int SplitMaxTroops = 600;
+	// Soft split threshold band: no split below 5000, guaranteed (100% daily
+	// chance) at 6000+, linear chance in between. Raised from 500/600 so hordes
+	// can actually grow to "large" (see LargeHordeThreshold) and beyond before
+	// splitting kicks in - ZombiePartySizeSpeedImmune (see ZombieSpeedBuffPatch)
+	// recomputes and cancels vanilla's over-party-size speed penalty from the
+	// live troops/PartySizeLimit ratio rather than a fixed constant, so it holds
+	// correctly at this scale too, not just the old few-hundred-troop range.
+	public static int SplitMinTroops = 5000;
+	public static int SplitMaxTroops = 6000;
 	public static float SplitFraction = 0.3f;
 	public static float SplitAwayDistanceFactor = 0.8f;
 	// Where the split-off party's spawn point lands relative to the parent,
@@ -387,8 +392,8 @@ internal static class ZombieBehaviorConfig
 				HeroTurnBaseChance = 0.25f;
 				HeroTurnTroopSizeModifier = 0.2f;
 				GreedyGrowthTroopThreshold = 200;
-				SplitMinTroops = 700;
-				SplitMaxTroops = 900;
+				SplitMinTroops = 7000;
+				SplitMaxTroops = 9000;
 				VillageRaidTroopThreshold = 200;
 				SettlementSiegeTroopThreshold = 600;
 				StartingGroupSize = 6;
@@ -401,8 +406,8 @@ internal static class ZombieBehaviorConfig
 				HeroTurnBaseChance = 0.55f;
 				HeroTurnTroopSizeModifier = 0.4f;
 				GreedyGrowthTroopThreshold = 100;
-				SplitMinTroops = 350;
-				SplitMaxTroops = 450;
+				SplitMinTroops = 3500;
+				SplitMaxTroops = 4500;
 				VillageRaidTroopThreshold = 100;
 				SettlementSiegeTroopThreshold = 300;
 				StartingGroupSize = 14;
@@ -416,8 +421,8 @@ internal static class ZombieBehaviorConfig
 				HeroTurnTroopSizeModifier = 0.3f;
 				// Same as MediumHordeThreshold - greedy engages exactly at "medium" here.
 				GreedyGrowthTroopThreshold = 150;
-				SplitMinTroops = 500;
-				SplitMaxTroops = 600;
+				SplitMinTroops = 5000;
+				SplitMaxTroops = 6000;
 				VillageRaidTroopThreshold = 150;
 				SettlementSiegeTroopThreshold = 400;
 				StartingGroupSize = 10;
